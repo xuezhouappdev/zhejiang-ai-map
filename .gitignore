@@ -18,3 +18,7 @@ yarn-error.log*
 # Temporary
 *.bak
 *.tmp
+
+# 临时备份（按时间戳命名）
+*.bak_*
+*.BAK_*

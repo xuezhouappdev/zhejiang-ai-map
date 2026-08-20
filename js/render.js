@@ -19,9 +19,16 @@ const esc = (s) => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(
 let currentDimension = "all";
 let activeTask = null;
 const progressStore = JSON.parse(localStorage.getItem("progressStore") || "{}");
+const TASK_COLUMN_OPTIONS = [
+  ["task", "任务内容"], ["dimension", "所属领域"], ["group", "重点任务"],
+  ["owner", "责任单位"], ["co", "协同单位"], ["timeNode", "时间节点"], ["researchTime", "研究时间"],
+  ["importance", "重要程度"], ["target", "目标"], ["id", "编号"]
+];
+const DEFAULT_TASK_COLUMNS = ["task", "dimension", "owner", "co", "timeNode", "importance"];
+let selectedTaskColumns = DEFAULT_TASK_COLUMNS.slice();
+let taskSort = { key: "", direction: 1 };
+let importanceFilterValue = "";
 const PAGE_ROUTES = {
-  "目标体系": "pages/goals.html",
-  "政策体系": "pages/policies.html",
   "重点任务": "pages/tasks.html",
   "重大项目": "pages/projects.html",
   "应用场景": "pages/scene.html",
@@ -52,10 +59,13 @@ async function loadData() {
       TASKS = window.TASKS_DATA.tasks || [];
       DIMS = window.TASKS_DATA.dimensions || DIMS;
       console.warn("已切换到本地兼容数据，共", TASKS.length, "条任务");
-      return;
+    } else {
+      console.warn("未找到可用的任务数据");
     }
-    console.warn("未找到可用的任务数据");
   }
+
+  // 统一清洗 group 末尾句号（中英文 / 全半角逗号句号），保证三处页面口径一致
+  TASKS.forEach(t => { t.group = String(t.group || "").replace(/[。.．,，]+$/, "").trim(); });
 }
 
 
@@ -69,10 +79,6 @@ function buildMatrix() {
   const rows = [
     ["目标体系", "目标体系"],
     ["政策体系", "政策体系"],
-    ["重点任务", "action"],
-    ["重大项目", "重大项目"],
-    ["应用场景", "应用场景"],
-    ["责任主体", "责任主体"],
   ];
 
   const rowHTML = rows.map(([label, key]) => {
@@ -137,16 +143,10 @@ function buildRails() {
   const left = document.getElementById("railLeft");
   const right = document.getElementById("railRight");
   if (left) {
-    const items = RAIL_DATA.leftRail.items.map(item =>
-      `<div class="rail-cell${item.interactive ? " interactive" : ""}">${item.name}<br>${item.desc.join("<br>")}</div>`
-    ).join("");
-    left.innerHTML = `<div class="rail-cell head">${RAIL_DATA.leftRail.label.split("").join("<br>")}</div>${items}`;
+    left.innerHTML = `<div class="rail-cell head">${RAIL_DATA.leftRail.label.split("").join("<br>")}</div>`;
   }
   if (right) {
-    const items = RAIL_DATA.rightRail.items.map(item =>
-      `<div class="rail-cell">${item.name}<br>${item.desc.join("<br>")}</div>`
-    ).join("");
-    right.innerHTML = `<div class="rail-cell head">${RAIL_DATA.rightRail.label.split("").join("<br>")}</div>${items}`;
+    right.innerHTML = `<div class="rail-cell head">${RAIL_DATA.rightRail.label.split("").join("<br>")}</div>`;
   }
 }
 
@@ -173,46 +173,85 @@ function scopedTasks() {
   return TASKS.filter(t => t.dimension === dim);
 }
 
+function taskColumnValue(task, key) {
+  if (key === "task") return `${task.id}．${task.task}`;
+  if (key === "timeNode") return task.timeNode || task.time || "";
+  return task[key] ?? "";
+}
+
+function renderImportanceTags(value) {
+  if (!value) return '<span class="tag tag-mute">未标记</span>';
+  return String(value).split("；").map(label => {
+    const tone = label.includes("省领导") ? "tag-red" : label.includes("孟主任") ? "tag-orange" : "tag-blue";
+    return `<span class="tag ${tone}">${esc(label)}</span>`;
+  }).join("");
+}
+
+function taskGridTemplate() {
+  return selectedTaskColumns.map(key => {
+    if (key === "task") return "minmax(360px,2.4fr)";
+    if (key === "dimension") return "minmax(70px,.45fr)";
+    if (key === "co" || key === "group") return "minmax(170px,1.1fr)";
+    if (["researchTime", "importance", "timeNode", "id"].includes(key)) return "minmax(100px,.72fr)";
+    return "minmax(120px,.85fr)";
+  }).join(" ");
+}
+
+function applyTaskColumns() {
+  const list = document.querySelector(".task-list");
+  const head = document.getElementById("taskListHead");
+  if (!list || !head) return;
+  list.style.setProperty("--task-grid-columns", taskGridTemplate());
+  head.innerHTML = selectedTaskColumns.map(key => {
+    const label = TASK_COLUMN_OPTIONS.find(item => item[0] === key)?.[1] || key;
+    if (!["owner", "timeNode"].includes(key)) return `<div>${label}</div>`;
+    const indicator = taskSort.key === key ? (taskSort.direction === 1 ? "▲" : "▼") : "↕";
+    return `<div data-sort-key="${key}">${label}<span class="sort-indicator">${indicator}</span></div>`;
+  }).join("");
+}
+
+function buildTaskColumnPicker() {
+  const menu = document.getElementById("columnMenu");
+  if (!menu || menu.dataset.ready) return;
+  const saved = JSON.parse(localStorage.getItem("taskColumns") || "null");
+  if (Array.isArray(saved) && saved.length && saved.includes("task")) selectedTaskColumns = saved.filter(key => TASK_COLUMN_OPTIONS.some(item => item[0] === key));
+  menu.innerHTML = TASK_COLUMN_OPTIONS.map(([key, label]) => `<label><input type="checkbox" value="${key}" ${selectedTaskColumns.includes(key) ? "checked" : ""}>${label}</label>`).join("");
+  menu.dataset.ready = "true";
+  applyTaskColumns();
+}
+
 function buildFilters() {
-  const groups = [...new Set(scopedTasks().map(t => t.group))];
-  const owners = [...new Set(scopedTasks().map(t => t.owner))];
-  const times = [...new Set(scopedTasks().map(t => t.time))];
-
-  const gSel = $("#groupFilter");
-  const oSel = $("#ownerFilter");
-  const tSel = $("#timeFilter");
-
-  gSel.innerHTML = '<option value="">全部重点任务</option>' +
-    groups.map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join("");
-  oSel.innerHTML = '<option value="">全部责任单位</option>' +
-    owners.map(o => `<option value="${esc(o)}">${esc(o)}</option>`).join("");
-  tSel.innerHTML = '<option value="">全部时间节点</option>' +
-    times.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join("");
+  const dSel = $("#dimensionFilter");
+  if (dSel) dSel.innerHTML = '<option value="">全部所属领域</option>' + DIMS.map(dim => `<option value="${esc(dim)}">${esc(dim)}</option>`).join("");
 }
 
 function renderTasks() {
   const rows = document.getElementById("taskRows");
   if (!rows) return;
-  const g = $("#groupFilter").value;
-  const o = $("#ownerFilter").value;
-  const tm = $("#timeFilter").value;
+  const dim = $("#dimensionFilter").value;
   const q = $("#taskSearch").value.trim().toLowerCase();
 
-  const data = scopedTasks().filter(t =>
-    (!g || t.group === g) &&
-    (!o || t.owner === o) &&
-    (!tm || t.time === tm) &&
-    (!q || [t.task, t.owner, t.co, t.group].join(" ").toLowerCase().includes(q))
-  );
+  const data = scopedTasks().filter(t => {
+    if (dim && t.dimension !== dim) return false;
+    const impVal = (t.importance || "").trim();
+    const v = importanceFilterValue;
+    if (v === "孟主任关注▲" && !impVal.includes("▲")) return false;
+    if (v === "省领导关注★" && !impVal.includes("★")) return false;
+    if (q && [t.task, t.dimension, t.group, t.owner, t.co].join(" ").toLowerCase().indexOf(q) === -1) return false;
+    return true;
+  });
+  if (taskSort.key) data.sort((a, b) => String(taskColumnValue(a, taskSort.key)).localeCompare(String(taskColumnValue(b, taskSort.key)), "zh-CN", { numeric:true }) * taskSort.direction);
 
   rows.innerHTML = data.map(t => {
     const ps = progressStore[t.id] || [];
+    const cells = selectedTaskColumns.map(key => {
+      if (key === "importance") return `<div class="importance-cell">${renderImportanceTags(t.importance)}</div>`;
+      const value = esc(taskColumnValue(t, key));
+      if (key === "task") return `<div class="task-name"><span class="chev">›</span><span>${value}</span></div>`;
+      return `<div>${value || "—"}</div>`;
+    }).join("");
     return `<article class="task" data-id="${t.id}">
-      <div class="task-summary">
-        <div class="task-name"><span class="chev">›</span><span>${t.id}．${esc(t.task)}</span></div>
-        <div>${esc(t.owner)}</div>
-        <div>${esc(t.co || "无")}</div>
-        <div>${esc(t.time)}</div>
+      <div class="task-summary">${cells}
       </div>
       <div class="task-detail">
         <div class="task-detail-inner">
@@ -221,10 +260,14 @@ function renderTasks() {
               <h3>任务细节</h3>
               <p>${esc(t.task)}</p>
               <div class="meta">
-                <div><b>任务分类</b>${esc(t.category)}</div>
+                <div><b>所属领域</b>${esc(t.dimension)}</div>
                 <div><b>所属重点任务</b>${esc(t.group)}</div>
                 <div><b>责任单位</b>${esc(t.owner)}</div>
-                <div><b>时间节点</b>${esc(t.time)}</div>
+                <div><b>协同单位</b>${esc(t.co) || "—"}</div>
+                <div><b>时间节点</b>${esc(t.timeNode || t.time)}</div>
+                <div><b>研究时间</b>${esc(t.researchTime) || "—"}</div>
+                <div><b>重要程度</b>${t.importance ? `<span class="tag ${t.importance.includes("★") ? "tag-red" : t.importance.includes("▲") ? "tag-orange" : "tag-blue"}">${esc(t.importance)}</span>` : `<span class="tag tag-mute">未标记</span>`}</div>
+                <div class="meta-wide"><b>预期目标</b>${esc(t.target) || "—"}</div>
               </div>
             </section>
             <section class="monthly">
@@ -271,8 +314,9 @@ function openDrawer(dim) {
     ? dim + "维度｜重点任务清单"
     : "重点任务清单";
   drawer.classList.add("open");
-  backdrop.classList.add("open");
+  backdrop?.classList.add("open");
   drawer.setAttribute("aria-hidden", "false");
+  applyTaskColumns();
   buildFilters();
   renderTasks();
 }
@@ -281,7 +325,7 @@ function closeDrawer() {
   const drawer = document.getElementById("taskDrawer");
   const backdrop = document.getElementById("drawerBackdrop");
   drawer.classList.remove("open");
-  backdrop.classList.remove("open");
+  backdrop?.classList.remove("open");
   drawer.setAttribute("aria-hidden", "true");
 }
 
@@ -299,10 +343,32 @@ function initDrawer() {
   });
   document.getElementById("drawerClose")?.addEventListener("click", closeDrawer);
   document.getElementById("drawerBackdrop")?.addEventListener("click", closeDrawer);
-  ["#groupFilter", "#ownerFilter", "#timeFilter"].forEach(s =>
+  ["#dimensionFilter"].forEach(s =>
     document.querySelector(s)?.addEventListener("change", renderTasks)
   );
   document.getElementById("taskSearch")?.addEventListener("input", renderTasks);
+  document.getElementById("taskListHead")?.addEventListener("click", event => {
+    const cell = event.target.closest("[data-sort-key]");
+    if (!cell) return;
+    const key = cell.dataset.sortKey;
+    taskSort = { key, direction: taskSort.key === key ? -taskSort.direction : 1 };
+    applyTaskColumns();
+    renderTasks();
+  });
+  document.getElementById("importanceFilter")?.addEventListener("change", event => {
+    importanceFilterValue = event.target.value;
+    renderTasks();
+  });
+  document.getElementById("columnToggle")?.addEventListener("click", () => document.getElementById("columnMenu")?.classList.toggle("open"));
+  document.getElementById("columnMenu")?.addEventListener("change", event => {
+    if (!event.target.matches("input[type=checkbox]")) return;
+    const checked = [...document.querySelectorAll("#columnMenu input:checked")].map(input => input.value);
+    if (!checked.includes("task")) { event.target.checked = true; return; }
+    selectedTaskColumns = checked;
+    localStorage.setItem("taskColumns", JSON.stringify(selectedTaskColumns));
+    applyTaskColumns();
+    renderTasks();
+  });
 
   const rows = document.getElementById("taskRows");
   rows?.addEventListener("click", e => {
@@ -404,4 +470,5 @@ document.addEventListener("DOMContentLoaded", async () => {
   buildMechanism();   // 动态生成机制专题
   initDrawer();       // 抽屉初始化（含buildFilters）
   initTicker();       // 资讯滚动
+  if (document.body.classList.contains("task-page")) openDrawer("all");
 });

@@ -3,135 +3,71 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>重点任务清单 — 浙江省人工智能高质量发展工作图谱</title>
+<title>重点任务清单｜浙江省人工智能高质量发展工作图谱</title>
 <link rel="stylesheet" href="../styles/tokens.css">
 <link rel="stylesheet" href="../styles/layout.css">
 <style>
-body { min-height: 100vh; background: #F8FAFC; }
-.page-header { background: linear-gradient(90deg, #1E40AF, #3B82F6 50%, #1E40AF); color: #fff; padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; }
-.page-header h1 { margin: 0; font-size: 20px; letter-spacing: .04em; }
-.page-header a { color: #93C5FD; text-decoration: none; font-size: 14px; }
-.page-header a:hover { text-decoration: underline; }
-.filters { max-width: 1500px; margin: 20px auto; padding: 0 40px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
-.filters select, .filters input { padding: 8px 12px; border: 1px solid #93C5FD; border-radius: 6px; font-size: 14px; background: #fff; color: #1E3A5F; }
-.filters input { flex: 1; min-width: 200px; }
-.filters select { min-width: 150px; }
-.filters .hint { font-size: 12px; color: #64748B; }
-.dim-tabs { max-width: 1500px; margin: 16px auto 0; padding: 0 40px; display: flex; gap: 8px; flex-wrap: wrap; }
-.dim-tab { padding: 6px 16px; border: 1px solid #93C5FD; border-radius: 20px; background: #fff; color: #3B82F6; cursor: pointer; font-size: 13px; transition: .2s; }
-.dim-tab:hover, .dim-tab.active { background: #3B82F6; color: #fff; border-color: #3B82F6; }
-.task-list-page { max-width: 1500px; margin: 0 auto 40px; padding: 0 40px; }
-.list-head { display: grid; grid-template-columns: 1fr 160px 160px 120px 80px; gap: 8px; padding: 10px 16px; background: #1E40AF; color: #fff; font-size: 13px; font-weight: 700; border-radius: 6px 6px 0 0; }
-.task-row { display: grid; grid-template-columns: 1fr 160px 160px 120px 80px; gap: 8px; padding: 12px 16px; background: #fff; border-bottom: 1px solid #BFDBFE; font-size: 13px; align-items: start; }
-.task-row:hover { background: #EFF6FF; }
-.task-row .dim-badge { background: #3B82F6; color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 11px; display: inline-block; margin-bottom: 4px; }
-.task-row .task-text { line-height: 1.5; margin-bottom: 4px; }
-.task-row .task-cat { font-size: 11px; color: #64748B; }
-.empty { text-align: center; padding: 60px; color: #64748B; font-size: 16px; }
+body.task-page { min-height:100vh; background:#F8FAFC; }
+.task-page > .page-header { width:min(1500px,calc(100% - 48px)); margin:16px auto 0; padding:18px 22px; display:flex; align-items:center; justify-content:space-between; gap:24px; color:#fff; background:linear-gradient(105deg,#102F4F,#1E40AF 58%,#2563EB); border:1px solid #93C5FD; box-shadow:0 12px 30px rgba(30,64,175,.16); }
+.task-page > .page-header small { display:block; margin-bottom:4px; color:#BFDBFE; font-family:Georgia,serif; letter-spacing:.16em; }
+.task-page > .page-header h1 { margin:0; font-size:22px; letter-spacing:.06em; }
+.task-page .breadcrumb { display:flex; align-items:center; gap:10px; color:#DBEAFE; font-size:13px; white-space:nowrap; }
+.task-page .breadcrumb a { color:#fff; text-decoration:none; }
+.task-page .breadcrumb a:hover { text-decoration:underline; }
+.task-page .breadcrumb strong { color:#fff; font-weight:700; }
+.task-page-content { width:min(1500px,calc(100% - 48px)); min-height:calc(100vh - 128px); margin:12px auto 24px; background:#F8FAFC; border:1px solid #93C5FD; box-shadow:0 24px 70px rgba(30,64,175,.18); overflow:hidden; }
+.task-page-content .filters { max-width:none; margin:0; padding:12px 18px; }
+.task-page .task-list { min-height:0; }
+.task-page-content .task-list { padding:0 18px 20px; }
+.task-page .list-head,.task-page .task-summary { grid-template-columns:var(--task-grid-columns); }
+.task-page .importance-cell { display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-start; gap:4px; }
+.task-page .importance-cell .tag { white-space:nowrap; }
+.task-page #taskListHead [data-sort-key] { cursor:pointer; user-select:none; }
+.task-page #taskListHead [data-sort-key]:hover { background:#BFDBFE; }
+.task-page .sort-indicator { margin-left:4px; color:#2563EB; font-size:11px; }
+@media(max-width:900px){ .task-page > .page-header,.task-page-content { width:1120px; margin-left:12px; margin-right:12px; } }
 </style>
 </head>
-<body>
+<body class="task-page">
 <header class="page-header">
-  <h1>重点任务清单</h1>
-  <a href="../index.html">← 返回总图</a>
+  <div><small>KEY TASKS</small><h1>重点任务</h1></div>
+  <nav class="breadcrumb" aria-label="面包屑导航"><a href="../index.html">工作推进总览</a><span>／</span><a href="details.html">五位一体任务清单</a><span>／</span><strong>重点任务</strong></nav>
 </header>
-
-<div class="filters">
-  <select id="dimFilter"><option value="">全部五大维度</option>
-    <option value="算力">算力</option><option value="数据">数据</option>
-    <option value="模型">模型</option><option value="应用">应用</option>
-    <option value="生态">生态</option>
-  </select>
-  <select id="ownerFilter"><option value="">全部责任单位</option></select>
-  <select id="timeFilter"><option value="">全部时间节点</option>
-    <option value="2026">2026年</option><option value="持续">持续推进</option>
-  </select>
-  <input id="searchInput" placeholder="搜索任务内容...">
-  <span class="hint" id="countHint"></span>
-</div>
-
-<div class="dim-tabs" id="dimTabs"></div>
-
-<div class="task-list-page">
-  <div class="list-head">
-    <div>任务内容</div><div>责任单位</div><div>协同单位</div>
-    <div>时间节点</div><div>编号</div>
+<main class="task-page-content" id="taskDrawer" aria-hidden="false">
+  <div class="filters">
+    <select id="dimensionFilter">
+      <option value="">全部所属领域</option>
+      <option value="算力">算力</option><option value="数据">数据</option><option value="模型">模型</option><option value="应用">应用</option><option value="生态">生态</option>
+    </select>
+    <select id="importanceFilter" aria-label="筛选重要程度">
+      <option value="">全部重要程度</option>
+      <option value="孟主任关注▲">孟主任关注▲</option>
+      <option value="省领导关注★">省领导关注★</option>
+    </select>
+    <input id="taskSearch" placeholder="搜索任务清单">
   </div>
-  <div id="taskRows"></div>
+  <div class="task-list">
+    <div class="list-head" id="taskListHead"></div>
+    <div id="taskRows"></div>
+  </div>
+</main>
+<div class="modal-backdrop" id="progressModal">
+  <form class="modal" id="progressForm">
+    <h2>填报月度进展</h2>
+    <div class="form-grid">
+      <div class="field"><label>调度月份</label><input type="month" id="month" required></div>
+      <div class="field"><label>任务状态</label><select id="status"><option>正常推进</option><option>进度滞后</option><option>暂停</option><option>已完成</option></select></div>
+      <div class="field full"><label>月度进展情况</label><textarea id="progress" required></textarea></div>
+      <div class="field full"><label>阶段性成果</label><textarea id="result"></textarea></div>
+      <div class="field full"><label>存在问题</label><textarea id="problem"></textarea></div>
+      <div class="field full"><label>需协调事项</label><textarea id="coordination"></textarea></div>
+      <div class="field full"><label>下月工作安排</label><textarea id="next"></textarea></div>
+    </div>
+    <div class="modal-actions"><button type="button" class="secondary" id="modalCancel">取消</button><button type="submit" class="primary">提交月度进展</button></div>
+  </form>
 </div>
-
+<div class="toast" id="toast">月度进展已保存</div>
 <script src="../data/tasks.js"></script>
-<script>
-const TASKS = window.TASKS_DATA?.tasks || [];
-
-const dimFilter = document.getElementById("dimFilter");
-const ownerFilter = document.getElementById("ownerFilter");
-const timeFilter = document.getElementById("timeFilter");
-const searchInput = document.getElementById("searchInput");
-const taskRows = document.getElementById("taskRows");
-const countHint = document.getElementById("countHint");
-const dimTabs = document.getElementById("dimTabs");
-
-// 初始化维度 Tab
-["算力", "数据", "模型", "应用", "生态"].forEach(function(d) {
-  var tab = document.createElement("button");
-  tab.className = "dim-tab";
-  tab.textContent = d;
-  tab.addEventListener("click", function() {
-    document.querySelectorAll(".dim-tab").forEach(function(t){ t.classList.remove("active"); });
-    tab.classList.add("active");
-    dimFilter.value = d;
-    render();
-  });
-  dimTabs.appendChild(tab);
-});
-
-// 初始化责任单位
-var owners = [...new Set(TASKS.map(function(t){ return t.owner; }))].sort();
-owners.forEach(function(o) {
-  var opt = document.createElement("option");
-  opt.value = o; opt.textContent = o;
-  ownerFilter.appendChild(opt);
-});
-
-// URL 参数同步
-var params = new URLSearchParams(location.search);
-if (params.get("dim")) dimFilter.value = params.get("dim");
-
-function render() {
-  var list = TASKS.slice();
-  var dim = dimFilter.value;
-  var owner = ownerFilter.value;
-  var time = timeFilter.value;
-  var search = searchInput.value.trim();
-
-  if (dim) list = list.filter(function(t){ return t.dimension === dim; });
-  if (owner) list = list.filter(function(t){ return t.owner.indexOf(owner) > -1; });
-  if (time === "持续") list = list.filter(function(t){ return t.time.indexOf("持续") > -1; });
-  else if (time) list = list.filter(function(t){ return t.time.indexOf(time) > -1; });
-  if (search) list = list.filter(function(t){ return t.task.indexOf(search) > -1 || t.category.indexOf(search) > -1; });
-
-  countHint.textContent = "共 " + list.length + " 条任务";
-  if (list.length === 0) { taskRows.innerHTML = '<div class="empty">没有符合条件的任务</div>'; return; }
-
-  taskRows.innerHTML = list.map(function(t) {
-    return '<div class="task-row">' +
-      '<div><span class="dim-badge">' + t.dimension + '</span>' +
-      '<div class="task-cat">' + t.category + ' › ' + t.group + '</div>' +
-      '<div class="task-text">' + t.task + '</div></div>' +
-      '<div>' + t.owner + '</div>' +
-      '<div>' + (t.co || "无") + '</div>' +
-      '<div>' + t.time + '</div>' +
-      '<div>#' + t.id + '</div>' +
-    '</div>';
-  }).join("");
-}
-
-dimFilter.addEventListener("change", render);
-ownerFilter.addEventListener("change", render);
-timeFilter.addEventListener("change", render);
-searchInput.addEventListener("input", render);
-render();
-</script>
+<script src="../js/render.js"></script>
 </body>
 </html>
