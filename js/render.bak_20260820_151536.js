@@ -16,28 +16,9 @@ const MECH_DATA = {"version": "2026-08-20", "chain": ["专班研究", "办公室
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => document.querySelectorAll(s);
 const esc = (s) => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-let currentDimension = "all";
-let activeTask = null;
-const progressStore = JSON.parse(localStorage.getItem("progressStore") || "{}");
-const PAGE_ROUTES = {
-  "目标体系": "pages/goals.html",
-  "政策体系": "pages/policies.html",
-  "重点任务": "pages/tasks.html",
-  "重大项目": "pages/projects.html",
-  "应用场景": "pages/scene.html",
-};
 
 // ── 加载外部数据 ──────────────────────────────────────
 async function loadData() {
-  // 浏览器直接打开本地文件时，fetch 会被 file:// 安全策略拦截。
-  // tasks.js 是由 tasks.json 同步生成的本地兼容数据入口。
-  if (location.protocol === "file:" && window.TASKS_DATA) {
-    TASKS = window.TASKS_DATA.tasks || [];
-    DIMS = window.TASKS_DATA.dimensions || DIMS;
-    console.log("本地兼容数据加载成功，共", TASKS.length, "条任务");
-    return;
-  }
-
   try {
     console.log("开始加载 tasks.json...");
     const res = await fetch("data/tasks.json");
@@ -48,13 +29,8 @@ async function loadData() {
     console.log("tasks.json 加载成功，共", TASKS.length, "条任务");
   } catch (e) {
     console.warn("加载 tasks.json 失败:", e.message);
-    if (window.TASKS_DATA) {
-      TASKS = window.TASKS_DATA.tasks || [];
-      DIMS = window.TASKS_DATA.dimensions || DIMS;
-      console.warn("已切换到本地兼容数据，共", TASKS.length, "条任务");
-      return;
-    }
-    console.warn("未找到可用的任务数据");
+    console.warn("如果使用 file:// 打开，请改用 http://localhost 访问");
+    // 保持 TASKS 为空数组，让 buildMatrix 等函数仍然渲染框架
   }
 }
 
@@ -76,10 +52,9 @@ function buildMatrix() {
   ];
 
   const rowHTML = rows.map(([label, key]) => {
-    const route = PAGE_ROUTES[label];
     const cells = DIMS.map((dim, i) => {
       const val = GOALS_DATA.dimensions[dim] && GOALS_DATA.dimensions[dim][key] || "";
-      const cls = key === "action" ? "cell task-preview" : "cell";
+      const cls = key === "action" ? `cell action" data-dimension="${dim}` : "cell";
       // 重点任务特殊处理
       if (key === "action") {
         const tasks = TASKS.filter(t => t.dimension === dim).slice(0, 5);
@@ -90,14 +65,13 @@ function buildMatrix() {
           ).join("");
         } else {
           // TASKS 未加载时显示占位提示
-          links = `<li class="task-placeholder">暂无任务数据</li>`;
+          links = `<li class="task-placeholder">点击查看全部任务 →</li>`;
         }
-        return `<div class="${cls}"><ul>${links}</ul></div>`;
+        return `<div class="${cls}" onclick="window.location.href='pages/tasks.html'"><ul>${links}</ul></div>`;
       }
       return `<div class="${cls}">${esc(val)}</div>`;
     }).join("");
-    const rowLabel = route ? `<div class="cell row page-link" data-page="${route}" role="link" tabindex="0">${label}</div>` : `<div class="cell row">${label}</div>`;
-    return `${rowLabel}${cells}`;
+    return `<div class="cell row">${label}</div>${cells}`;
   }).join("");
 
   el.innerHTML = `<div class="cell head"></div>${cols}${rowHTML}`;
@@ -191,8 +165,6 @@ function buildFilters() {
 }
 
 function renderTasks() {
-  const rows = document.getElementById("taskRows");
-  if (!rows) return;
   const g = $("#groupFilter").value;
   const o = $("#ownerFilter").value;
   const tm = $("#timeFilter").value;
@@ -285,72 +257,68 @@ function closeDrawer() {
   drawer.setAttribute("aria-hidden", "true");
 }
 
-// ── 初始化抽屉及进展填报事件 ────────────────────────────
-function initDrawer() {
-  document.querySelectorAll("[data-page]").forEach(el => {
-    const navigate = () => { location.href = el.dataset.page; };
-    el.addEventListener("click", navigate);
-    el.addEventListener("keydown", event => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        navigate();
-      }
+// ── 初始化抽屉事件 ──────────────────────────────────────
+document.querySelectorAll("[data-dimension]").forEach(el => {
+  if (el.classList.contains("action")) {
+    el.addEventListener("click", () => location.href = "pages/tasks.html");
+  } else {
+    el.addEventListener("click", () => openDrawer(el.dataset.dimension));
+  }
+});
+document.getElementById("drawerClose").onclick = closeDrawer;
+document.getElementById("drawerBackdrop").onclick = closeDrawer;
+["#groupFilter","#ownerFilter","#timeFilter"].forEach(s =>
+  document.querySelector(s).onchange = renderTasks
+);
+document.getElementById("taskSearch").oninput = renderTasks;
+
+// 任务行点击展开
+rows.addEventListener("click", e => {
+  const add = e.target.closest(".add-progress");
+  if (add) {
+    e.stopPropagation();
+    activeTask = add.dataset.id;
+    document.getElementById("progressModal").classList.add("open");
+    return;
+  }
+  const summary = e.target.closest(".task-summary");
+  if (summary) {
+    const task = summary.closest(".task");
+    document.querySelectorAll(".task.open").forEach(x => {
+      if (x !== task) x.classList.remove("open");
     });
-  });
-  document.getElementById("drawerClose")?.addEventListener("click", closeDrawer);
-  document.getElementById("drawerBackdrop")?.addEventListener("click", closeDrawer);
-  ["#groupFilter", "#ownerFilter", "#timeFilter"].forEach(s =>
-    document.querySelector(s)?.addEventListener("change", renderTasks)
-  );
-  document.getElementById("taskSearch")?.addEventListener("input", renderTasks);
+    task.classList.toggle("open");
+  }
+});
 
-  const rows = document.getElementById("taskRows");
-  rows?.addEventListener("click", e => {
-    const add = e.target.closest(".add-progress");
-    if (add) {
-      e.stopPropagation();
-      activeTask = add.dataset.id;
-      document.getElementById("progressModal")?.classList.add("open");
-      return;
-    }
-    const summary = e.target.closest(".task-summary");
-    if (summary) {
-      const task = summary.closest(".task");
-      document.querySelectorAll(".task.open").forEach(x => {
-        if (x !== task) x.classList.remove("open");
-      });
-      task.classList.toggle("open");
-    }
-  });
-
-  document.getElementById("modalCancel")?.addEventListener("click", () =>
-    document.getElementById("progressModal")?.classList.remove("open")
-  );
-  document.getElementById("progressModal")?.addEventListener("click", e => {
-    if (e.target.id === "progressModal") e.currentTarget.classList.remove("open");
-  });
-  document.getElementById("progressForm")?.addEventListener("submit", e => {
-    e.preventDefault();
-    const item = {
-      month: document.getElementById("month").value,
-      status: document.getElementById("status").value,
-      progress: document.getElementById("progress").value,
-      result: document.getElementById("result").value,
-      problem: document.getElementById("problem").value,
-      coordination: document.getElementById("coordination").value,
-      next: document.getElementById("next").value
-    };
-    (progressStore[activeTask] ??= []).unshift(item);
-    localStorage.setItem("progressStore", JSON.stringify(progressStore));
-    e.target.reset();
-    document.getElementById("progressModal").classList.remove("open");
-    renderTasks();
-    document.querySelector(`.task[data-id="${activeTask}"]`)?.classList.add("open");
-    const toast = document.getElementById("toast");
-    toast?.classList.add("show");
-    setTimeout(() => toast?.classList.remove("show"), 1800);
-  });
-}
+// 进度弹窗
+document.getElementById("modalCancel").onclick = () =>
+  document.getElementById("progressModal").classList.remove("open");
+document.getElementById("progressModal").addEventListener("click", e => {
+  if (e.target.id === "progressModal") e.currentTarget.classList.remove("open");
+});
+document.getElementById("progressForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const item = {
+    month: document.getElementById("month").value,
+    status: document.getElementById("status").value,
+    progress: document.getElementById("progress").value,
+    result: document.getElementById("result").value,
+    problem: document.getElementById("problem").value,
+    coordination: document.getElementById("coordination").value,
+    next: document.getElementById("next").value
+  };
+  (progressStore[activeTask] ??= []).unshift(item);
+  localStorage.setItem("progressStore", JSON.stringify(progressStore));
+  e.target.reset();
+  document.getElementById("progressModal").classList.remove("open");
+  renderTasks();
+  const open = document.querySelector(`.task[data-id="${activeTask}"]`);
+  if (open) open.classList.add("open");
+  const toast = document.getElementById("toast");
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 1800);
+});
 
 function populateFilters() {
   const dims = DIMS;

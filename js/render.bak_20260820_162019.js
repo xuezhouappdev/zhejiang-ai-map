@@ -79,7 +79,8 @@ function buildMatrix() {
     const route = PAGE_ROUTES[label];
     const cells = DIMS.map((dim, i) => {
       const val = GOALS_DATA.dimensions[dim] && GOALS_DATA.dimensions[dim][key] || "";
-      const cls = key === "action" ? "cell task-preview" : "cell";
+      const cls = route ? (key === "action" ? "cell action page-link" : "cell page-link") : "cell";
+      const href = route ? `${route}?dim=${encodeURIComponent(dim)}` : "";
       // 重点任务特殊处理
       if (key === "action") {
         const tasks = TASKS.filter(t => t.dimension === dim).slice(0, 5);
@@ -90,11 +91,11 @@ function buildMatrix() {
           ).join("");
         } else {
           // TASKS 未加载时显示占位提示
-          links = `<li class="task-placeholder">暂无任务数据</li>`;
+          links = `<li class="task-placeholder">点击查看全部任务 →</li>`;
         }
-        return `<div class="${cls}"><ul>${links}</ul></div>`;
+        return `<div class="${cls}" data-page="${href}" role="link" tabindex="0"><ul>${links}</ul></div>`;
       }
-      return `<div class="${cls}">${esc(val)}</div>`;
+      return route ? `<div class="${cls}" data-page="${href}" role="link" tabindex="0">${esc(val)}</div>` : `<div class="${cls}">${esc(val)}</div>`;
     }).join("");
     const rowLabel = route ? `<div class="cell row page-link" data-page="${route}" role="link" tabindex="0">${label}</div>` : `<div class="cell row">${label}</div>`;
     return `${rowLabel}${cells}`;

@@ -1,1 +1,12 @@
-:root{--navy:#07365f;--blue:#096ca9;--cyan:#17a8dc;--sky:#d9effc;--line:#8fc5e5;--ink:#173d5f;--paper:#f6fbff;--white:#fff;--shadow:0 24px 70px rgba(5,48,82,.22)}
+:root{
+  /* 现代科技蓝配色 - 参考 Linear/Vercel 风格 */
+  --navy:#1E40AF;    /* 深蓝 - 标题/强调 */
+  --blue:#3B82F6;    /* 主蓝 - 按钮/链接 */
+  --cyan:#60A5FA;    /* 亮蓝 - 装饰/高亮 */
+  --sky:#DBEAFE;     /* 浅蓝 - 背景/淡色 */
+  --line:#93C5FD;    /* 边框蓝 - 分割线 */
+  --ink:#1E3A5F;     /* 深蓝墨 - 正文 */
+  --paper:#F8FAFC;   /* 纸张白 - 背景 */
+  --white:#FFFFFF;
+  --shadow:0 24px 70px rgba(30,64,175,.18)
+}

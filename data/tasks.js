@@ -1,4 +1,5 @@
-{
+// 由 tasks.json 同步生成，支持 file:// 本地直接打开。
+window.TASKS_DATA = {
   "version": "2026-08-20",
   "dimensions": [
     "算力",
@@ -1773,4 +1774,4 @@
       "target": ""
     }
   ]
-}
+};

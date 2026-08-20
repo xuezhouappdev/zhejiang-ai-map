@@ -19,13 +19,6 @@ const esc = (s) => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(
 let currentDimension = "all";
 let activeTask = null;
 const progressStore = JSON.parse(localStorage.getItem("progressStore") || "{}");
-const PAGE_ROUTES = {
-  "目标体系": "pages/goals.html",
-  "政策体系": "pages/policies.html",
-  "重点任务": "pages/tasks.html",
-  "重大项目": "pages/projects.html",
-  "应用场景": "pages/scene.html",
-};
 
 // ── 加载外部数据 ──────────────────────────────────────
 async function loadData() {
@@ -76,10 +69,9 @@ function buildMatrix() {
   ];
 
   const rowHTML = rows.map(([label, key]) => {
-    const route = PAGE_ROUTES[label];
     const cells = DIMS.map((dim, i) => {
       const val = GOALS_DATA.dimensions[dim] && GOALS_DATA.dimensions[dim][key] || "";
-      const cls = key === "action" ? "cell task-preview" : "cell";
+      const cls = key === "action" ? `cell action" data-dimension="${dim}` : "cell";
       // 重点任务特殊处理
       if (key === "action") {
         const tasks = TASKS.filter(t => t.dimension === dim).slice(0, 5);
@@ -90,14 +82,13 @@ function buildMatrix() {
           ).join("");
         } else {
           // TASKS 未加载时显示占位提示
-          links = `<li class="task-placeholder">暂无任务数据</li>`;
+          links = `<li class="task-placeholder">点击查看全部任务 →</li>`;
         }
         return `<div class="${cls}"><ul>${links}</ul></div>`;
       }
       return `<div class="${cls}">${esc(val)}</div>`;
     }).join("");
-    const rowLabel = route ? `<div class="cell row page-link" data-page="${route}" role="link" tabindex="0">${label}</div>` : `<div class="cell row">${label}</div>`;
-    return `${rowLabel}${cells}`;
+    return `<div class="cell row">${label}</div>${cells}`;
   }).join("");
 
   el.innerHTML = `<div class="cell head"></div>${cols}${rowHTML}`;
@@ -287,16 +278,9 @@ function closeDrawer() {
 
 // ── 初始化抽屉及进展填报事件 ────────────────────────────
 function initDrawer() {
-  document.querySelectorAll("[data-page]").forEach(el => {
-    const navigate = () => { location.href = el.dataset.page; };
-    el.addEventListener("click", navigate);
-    el.addEventListener("keydown", event => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        navigate();
-      }
-    });
-  });
+  document.querySelectorAll("[data-dimension]").forEach(el =>
+    el.addEventListener("click", () => openDrawer(el.dataset.dimension))
+  );
   document.getElementById("drawerClose")?.addEventListener("click", closeDrawer);
   document.getElementById("drawerBackdrop")?.addEventListener("click", closeDrawer);
   ["#groupFilter", "#ownerFilter", "#timeFilter"].forEach(s =>
