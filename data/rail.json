@@ -1,0 +1,103 @@
+{
+  "version": "2026-08-20",
+  "leftRail": {
+    "label": "工作体系",
+    "items": [
+      {
+        "name": "例会",
+        "desc": [
+          "协调",
+          "机制"
+        ],
+        "interactive": false
+      },
+      {
+        "name": "统计",
+        "desc": [
+          "监测",
+          "机制"
+        ],
+        "interactive": false
+      },
+      {
+        "name": "专题",
+        "desc": [
+          "调研",
+          "机制"
+        ],
+        "interactive": true
+      },
+      {
+        "name": "跟踪",
+        "desc": [
+          "调度",
+          "机制"
+        ],
+        "interactive": false
+      },
+      {
+        "name": "安全",
+        "desc": [
+          "保障",
+          "机制"
+        ],
+        "interactive": false
+      },
+      {
+        "name": "评价",
+        "desc": [
+          "推广",
+          "机制"
+        ],
+        "interactive": false
+      }
+    ]
+  },
+  "rightRail": {
+    "label": "评价体系",
+    "items": [
+      {
+        "name": "目标",
+        "desc": [
+          "监测"
+        ],
+        "interactive": false
+      },
+      {
+        "name": "政策",
+        "desc": [
+          "评估"
+        ],
+        "interactive": false
+      },
+      {
+        "name": "任务",
+        "desc": [
+          "调度"
+        ],
+        "interactive": false
+      },
+      {
+        "name": "项目",
+        "desc": [
+          "跟踪"
+        ],
+        "interactive": false
+      },
+      {
+        "name": "综合",
+        "desc": [
+          "评价"
+        ],
+        "interactive": false
+      },
+      {
+        "name": "通报",
+        "desc": [
+          "晾晒"
+        ],
+        "interactive": false
+      }
+    ]
+  }
+}
