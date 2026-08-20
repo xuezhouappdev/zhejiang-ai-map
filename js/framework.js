@@ -1,10 +1,35 @@
 (function () {
   const data = window.GOALS_DATA || { overall: {}, dimensions: {} };
+  const objects = window.OBJECTS_DATA || { dimensions: {} };
+  const projects = window.PROJECTS_DATA?.projects || [];
   const rails = window.RAIL_DATA || { leftRail: { items: [] }, rightRail: { items: [] } };
   const news = window.NEWS_DATA?.items || [];
   const dims = ["算力", "数据", "模型", "应用", "生态"];
   const section = document.body.dataset.section || "";
   const isDetailsPage = location.pathname.endsWith("/details.html") || location.pathname.endsWith("details.html");
+
+  // 从 policies.js 按维度取政策名称列表（最多显示5条）
+  const policiesByDim = (() => {
+    const all = window.POLICIES_DATA?.policies || [];
+    const out = {};
+    dims.forEach(dim => {
+      const list = all.filter(p => p.category === dim).map(p => p.name);
+      out[dim] = list;
+    });
+    return out;
+  })();
+  const projectsByDim = (() => {
+    const out = {};
+    dims.forEach(dim => {
+      out[dim] = [...new Set(
+        projects
+          .filter(project => project["大类"] === dim)
+          .map(project => project["领域"])
+          .filter(Boolean)
+      )];
+    });
+    return out;
+  })();
 
   // 从 tasks.js 取真实任务数据，统一剥掉 group 末尾句号（中英文 / 全半角）
   const cleanGroup = g => String(g || "").replace(/[。.．,，]+$/, "").trim();
@@ -35,16 +60,44 @@
   const rowKey = label => (label === "重点任务" ? "重点任务" : label);
   const rows = ["目标体系", "政策体系", "重点任务", "重大项目", "应用场景", "责任主体"];
   const o = data.overall || {};
+  const objectiveMarkup = dimension => {
+    const target = objects.dimensions?.[dimension];
+    if (!target) return `<p>${esc(split(data.dimensions?.[dimension]?.["目标体系"]).join("；"))}</p>`;
+    return ["2026年", "2030年"]
+      .map(year => `<p><strong>${year}</strong>${esc(target[year] || "")}</p>`)
+      .join("");
+  };
   const header = document.querySelector(".page-header");
   if (!header) return;
 
   const guaranteeItems = ["资讯库", "政策库", "企业库", "项目库", "场景库", "专家库", "产业图谱"];
+  const detailPageRoutes = {
+    "政策体系": "policies.html",
+    "重点任务": "tasks.html",
+    "重大项目": "projects.html",
+    "应用场景": "scene.html"
+  };
+  const guaranteePageRoutes = {
+    "政策库": "policies.html",
+    "项目库": "projects.html",
+    "场景库": "scene.html",
+    "专家库": "experts.html",
+    "产业图谱": "https://tzxmgl.zjzwfw.gov.cn/jbosth/#/login?appCode=kgs&loginConfigId=2000015"
+  };
 
   const renderGuaranteePanel = (prefix = "guarantee") =>
     `<section class="${prefix}-panel" aria-label="保障体系">
       <div class="${prefix}-title">保障体系</div>
       <div class="${prefix}-grid">
-        ${guaranteeItems.map(item => `<div>${item}</div>`).join("")}
+        ${guaranteeItems.map(item => {
+          const route = guaranteePageRoutes[item];
+          if (route) {
+            const isExternal = /^https?:\/\//i.test(route);
+            const attrs = isExternal ? ` href="${route}" target="_blank" rel="noopener noreferrer"` : ` href="${route}"`;
+            return `<a${attrs}>${item}</a>`;
+          }
+          return `<div class="muted">${item}</div>`;
+        }).join("")}
       </div>
     </section>`;
 
@@ -57,6 +110,22 @@
       const active = section === label ? " active" : "";
       const values = dims
         .map(dim => {
+          // 政策体系行：从 policies.js 按维度取政策名称列表（最多显示2条，后跟等N项）
+          if (label === "政策体系") {
+            const list = policiesByDim[dim] || [];
+            const MAX_SHOW = 2;
+            const shown = list.slice(0, MAX_SHOW);
+            const remain = list.length - MAX_SHOW;
+            let content;
+            if (list.length === 0) {
+              content = '<span class="overview-empty">暂无政策数据</span>';
+            } else if (remain > 0) {
+              content = `<span class="overview-policy-text">${esc(shown.join(""))}<span class="overview-policy-count">等<span class="pc-num">${remain}</span>项</span></span>`;
+            } else {
+              content = esc(shown.join(""));
+            }
+            return `<div class="overview-cell">${content}</div>`;
+          }
           // 重点任务行：直接从 tasks.js 取真实 group 列表（去重 + 已剥句号），与 tasks.html 完全同源
           if (label === "重点任务") {
             const groups = taskGroupsByDim[dim] || [];
@@ -65,13 +134,24 @@
               : '<span class="overview-empty">暂无重点任务数据</span>';
             return `<div class="overview-cell">${content}</div>`;
           }
+          if (label === "重大项目") {
+            const list = projectsByDim[dim] || [];
+            const content = list.length
+              ? `<ul class="overview-task-list">${list.map(item => `<li>${esc(item)}</li>`).join("")}</ul>`
+              : '<span class="overview-empty">暂无重大项目数据</span>';
+            return `<div class="overview-cell">${content}</div>`;
+          }
+          if (label === "目标体系") {
+            return `<div class="overview-cell objective-cell">${objectiveMarkup(dim)}</div>`;
+          }
           const list = split(data.dimensions?.[dim]?.[rowKey(label)]);
           const content = esc(list.join("；"));
           return `<div class="overview-cell">${content}</div>`;
         })
         .join("");
-      const rowLabel = isDetailsPage && label === "重点任务"
-        ? `<a class="overview-row-label overview-page-link${active}" href="tasks.html">${esc(label)}</a>`
+      const detailPage = isDetailsPage ? detailPageRoutes[label] : "";
+      const rowLabel = detailPage
+        ? `<a class="overview-row-label overview-page-link${active}" href="${detailPage}">${esc(label)}</a>`
         : `<div class="overview-row-label${active}">${esc(label)}</div>`;
       return `${rowLabel}${values}`;
     })

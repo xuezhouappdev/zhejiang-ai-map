@@ -212,6 +212,43 @@ select {
 .band.five {
   background: #3B82F6
 }
+.band.five.page-link {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.band.five.page-link::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 18%, rgba(255,255,255,.24) 47%, transparent 68%);
+  transform: translateX(-100%);
+  animation: five-band-sweep 3.6s ease-in-out infinite;
+}
+.band.five.page-link::after {
+  content: "点击查看详情  ›";
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  color: rgba(255,255,255,.92);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  transform: translateY(-50%);
+  opacity: .9;
+  pointer-events: none;
+}
+.band.five.page-link:hover,
+.band.five.page-link:focus-visible {
+  box-shadow: inset 0 0 0 2px rgba(219,234,254,.78), 0 5px 18px rgba(37,99,235,.24);
+  outline: none;
+}
+@keyframes five-band-sweep {
+  0%, 45% { transform: translateX(-100%); }
+  72%, 100% { transform: translateX(100%); }
+}
 
 .goals {
   display: grid;
@@ -454,6 +491,12 @@ select {
   background: #fff;
   color: #1E3A5F;
   padding: 0 10px
+}
+
+.list-page .filters select {
+  width: 180px;
+  min-width: 0;
+  flex: 0 0 180px;
 }
 
 .filters input {
@@ -854,6 +897,51 @@ select {
   padding: 3px 6px;
   text-wrap: balance
 }
+.objective-cell {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 5px;
+  padding: 7px 10px;
+  text-align: left;
+  font-family: "方正兰亭黑", "Source Han Sans SC", "PingFang SC", sans-serif;
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 1.35;
+  text-wrap: wrap;
+}
+.objective-cell p {
+  margin: 0;
+  font-family: inherit;
+  font-weight: 400;
+  line-height: 1.35;
+  text-align: justify;
+  text-justify: inter-ideograph;
+}
+.objective-cell strong {
+  margin-right: 5px;
+  font-family: inherit;
+  color: #3b82f6;
+  white-space: nowrap;
+}
+.cell.policy-cell {
+  text-align: center;
+}
+.cell.policy-cell .overview-policy-text {
+  display: inline;
+  max-width: 100%;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.cell.policy-cell .overview-policy-count {
+  color: inherit;
+  font-weight: inherit;
+  display: inline;
+}
+.cell.policy-cell .overview-policy-count .pc-num {
+  color: #3b82f6;
+  font-weight: 600;
+}
 
 .cell.head {
   font-size: 15px
@@ -1250,7 +1338,57 @@ select {
   border-radius: 2px
 }
 
+/* 无链接项：灰色调区分 */
+.guarantee-grid>div.muted,
+.guarantee-grid>span.muted {
+  background: linear-gradient(145deg, #F1F5F9, #E2E8F0);
+  border-color: #CBD5E1;
+  color: #94A3B8;
+  box-shadow: none;
+  cursor: default;
+}
+.guarantee-grid>div.muted::before,
+.guarantee-grid>span.muted::before {
+  background: #94A3B8;
+}
+
+/* 有链接项 */
+.guarantee-grid>a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  background: linear-gradient(145deg, #fff, #DBEAFE);
+  border: 1px solid #93C5FD;
+  color: #1E40AF;
+  font-size: clamp(13px, 1vw, 17px);
+  font-weight: 750;
+  letter-spacing: .04em;
+  box-shadow: inset 0 3px 0 rgba(59, 130, 246, .16);
+  text-decoration: none;
+  transition: filter .15s, box-shadow .15s;
+}
+.guarantee-grid>a::before {
+  content: "";
+  position: absolute;
+  top: 22%;
+  width: 24px;
+  height: 3px;
+  background: #3B82F6;
+  border-radius: 2px;
+}
+.guarantee-grid>a:hover {
+  filter: brightness(1.04);
+  box-shadow: inset 0 3px 0 rgba(59, 130, 246, .28), 0 4px 12px rgba(59, 130, 246, .2);
+}
+
 @media(prefers-reduced-motion:reduce) {
+  .band.five.page-link,
+  .band.five.page-link::before {
+    animation: none;
+  }
+
   .ticker-track {
     animation: none
   }
@@ -1314,4 +1452,207 @@ select {
   height: 3px;
   background: #3b82f6;
   border-radius: 2px;
+}
+
+/* 无链接项：灰色调区分 */
+.overview-guarantee-grid > div.muted,
+.overview-guarantee-grid > span.muted {
+  background: linear-gradient(145deg, #F1F5F9, #E2E8F0);
+  border-color: #CBD5E1;
+  color: #94A3B8;
+  box-shadow: none;
+  cursor: default;
+}
+.overview-guarantee-grid > div.muted::before,
+.overview-guarantee-grid > span.muted::before {
+  background: #94A3B8;
+}
+
+/* 有链接项 */
+.overview-guarantee-grid > a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 1px;
+  min-width: 0;
+  background: linear-gradient(145deg, #fff, #dbeafe);
+  border: 1px solid #93c5fd;
+  color: #1e40af;
+  font-size: 14px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  box-shadow: inset 0 3px 0 rgba(59, 130, 246, 0.16);
+  text-decoration: none;
+  transition: filter .15s, box-shadow .15s;
+}
+.overview-guarantee-grid > a::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  width: 24px;
+  height: 3px;
+  background: #3b82f6;
+  border-radius: 2px;
+}
+.overview-guarantee-grid > a:hover {
+  filter: brightness(1.04);
+  box-shadow: inset 0 3px 0 rgba(59, 130, 246, 0.28), 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+/* ════════════════════════════════════════════════════════════
+   统一列表页样式（政策体系 / 重大项目 / 应用场景）
+   ════════════════════════════════════════════════════════════ */
+
+body.list-page { min-height:100vh; background:#F8FAFC; }
+
+.list-page > .page-header {
+  width: min(1500px, calc(100% - 48px));
+  margin: 16px auto 0;
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  color: #fff;
+  background: linear-gradient(105deg, #102F4F, #1E40AF 58%, #2563EB);
+  border: 1px solid #93C5FD;
+  box-shadow: 0 12px 30px rgba(30, 64, 175, .16);
+}
+.list-page > .page-header small {
+  display: block;
+  margin-bottom: 4px;
+  color: #BFDBFE;
+  font-family: Georgia, serif;
+  letter-spacing: .16em;
+}
+.list-page > .page-header h1 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: .06em;
+}
+.list-page .breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #DBEAFE;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.list-page .breadcrumb a { color: #fff; text-decoration: none; }
+.list-page .breadcrumb a:hover { text-decoration: underline; }
+.list-page .breadcrumb strong { color: #fff; font-weight: 700; }
+
+.list-page-content {
+  width: min(1500px, calc(100% - 48px));
+  min-height: calc(100vh - 128px);
+  margin: 12px auto 24px;
+  background: #F8FAFC;
+  border: 1px solid #93C5FD;
+  box-shadow: 0 24px 70px rgba(30, 64, 175, .18);
+  overflow: hidden;
+}
+.list-page-content .filters {
+  max-width: none;
+  margin: 0;
+  padding: 12px 18px;
+}
+.list-page .list-body { min-height: 0; }
+.list-page-content .list-body { padding: 0 18px 20px; }
+
+/* 列表容器：设置统一 CSS 变量，子元素通过 var(--task-grid-columns) 继承列宽 */
+.list-body { --task-grid-columns: auto; }
+
+/* 表头：grid 列宽从 .list-body 继承 */
+.list-body > .list-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #DBEAFE;
+  color: #1E40AF;
+  font-size: 12px;
+  font-weight: 750;
+  display: grid;
+  grid-template-columns: var(--task-grid-columns);
+}
+.list-body > .list-head > div {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  white-space: nowrap;
+}
+.list-body > .list-head > div.list-sortable {
+  cursor: pointer;
+  user-select: none;
+}
+.list-body > .list-head > div.list-sortable:hover,
+.list-body > .list-head > div.list-sortable:focus-visible {
+  background: #BFDBFE;
+  outline: none;
+}
+.list-body > .list-head .sort-indicator {
+  margin-left: 5px;
+  color: #2563EB;
+  font-size: 11px;
+}
+
+/* 列表行 */
+#listRows {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  background: #E2E8F0;
+  border: 1px solid #BFDBFE;
+  border-top: none;
+}
+.list-row {
+  width: 100%;
+  min-width: 0;
+  background: #fff;
+  cursor: default;
+  border-bottom: 1px solid #BFDBFE;
+}
+.list-row:last-child { border-bottom: none; }
+
+/* 列表行内的 summary：grid 列宽从 .list-body 继承 */
+.list-summary {
+  display: grid;
+  grid-template-columns: var(--task-grid-columns);
+  width: 100%;
+  min-width: 0;
+}
+.list-summary > div {
+  padding: 11px 12px;
+  font-size: 13px;
+  color: #1E3A5F;
+  border-right: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.4;
+}
+.list-summary > div:last-child { border-right: none; }
+.list-summary > div.row-title {
+  justify-content: flex-start;
+  text-align: left;
+  font-weight: 600;
+  color: #1E40AF;
+}
+
+.list-empty {
+  padding: 60px;
+  text-align: center;
+  color: #64748B;
+  background: #fff;
+  font-size: 14px;
+}
+
+@media(max-width:900px) {
+  body.list-page { overflow-x: auto; }
+  .list-page > .page-header,
+  .list-page-content {
+    width: 1120px;
+    margin-left: 12px;
+    margin-right: 12px;
+  }
 }

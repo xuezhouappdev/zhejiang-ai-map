@@ -16,6 +16,8 @@
 | 6 | `rail.json` | `rail.js` | 轨道/栏位 |
 | 7 | `scenes.json` | `scenes.js` | 应用场景 |
 | 8 | `tasks.json` | `tasks.js` | 重点任务 |
+| 9 | `experts.json` | `experts.js` | 专家委员会名单 |
+| 10 | `objects.json` | `objects.js` | 目标体系分维度 |
 
 辅助文件：
 

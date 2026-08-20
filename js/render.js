@@ -12,6 +12,33 @@ const RAIL_DATA = {"version": "2026-08-20", "leftRail": {"label": "工作体系"
 
 const MECH_DATA = {"version": "2026-08-20", "chain": ["专班研究", "办公室协调", "领导小组审议"], "topics": ["算力专题", "数据专题", "模型专题", "应用专题", "生态专题"], "paradigm": "4353工作范式（分类分层分级）"};
 
+const OBJECTS_DATA = window.OBJECTS_DATA || { dimensions: {} };
+const objectiveMarkup = dimension => {
+  const target = OBJECTS_DATA.dimensions?.[dimension];
+  if (!target) return `<p>${esc(GOALS_DATA.dimensions?.[dimension]?.["目标体系"] || "")}</p>`;
+  return ["2026年", "2030年"]
+    .map(year => `<p><strong>${year}</strong>${esc(target[year] || "")}</p>`)
+    .join("");
+};
+const policiesByDim = (() => {
+  const all = window.POLICIES_DATA?.policies || [];
+  const out = {};
+  DIMS.forEach(dim => {
+    out[dim] = all.filter(policy => policy.category === dim).map(policy => policy.name);
+  });
+  return out;
+})();
+const policySummaryMarkup = dimension => {
+  const list = policiesByDim[dimension] || [];
+  const shown = list.slice(0, 2);
+  const remain = list.length - shown.length;
+  if (!list.length) return '<span class="overview-empty">暂无政策数据</span>';
+  const count = remain > 0
+    ? `<span class="overview-policy-count">等<span class="pc-num">${remain}</span>项</span>`
+    : "";
+  return `<span class="overview-policy-text">${esc(shown.join(""))}${count}</span>`;
+};
+
 // ── 工具函数 ───────────────────────────────────────────
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => document.querySelectorAll(s);
@@ -38,16 +65,25 @@ const PAGE_ROUTES = {
 async function loadData() {
   // 浏览器直接打开本地文件时，fetch 会被 file:// 安全策略拦截。
   // tasks.js 是由 tasks.json 同步生成的本地兼容数据入口。
+  // tasks.js 已同步加载，无需 fetch（列表页无 tasks.js 时直接跳过）
   if (location.protocol === "file:" && window.TASKS_DATA) {
     TASKS = window.TASKS_DATA.tasks || [];
     DIMS = window.TASKS_DATA.dimensions || DIMS;
     console.log("本地兼容数据加载成功，共", TASKS.length, "条任务");
     return;
   }
+  // http/https 环境走 fetch
+  if (location.protocol === "file:") {
+    console.warn("file:// 环境无可用任务数据，跳过 fetch");
+    return;
+  }
 
   try {
     console.log("开始加载 tasks.json...");
-    const res = await fetch("data/tasks.json");
+    const base = location.pathname.includes("/pages/")
+      ? "../data/tasks.json"
+      : "data/tasks.json";
+    const res = await fetch(base);
     if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
     TASKS = data.tasks || [];
@@ -84,8 +120,12 @@ function buildMatrix() {
   const rowHTML = rows.map(([label, key]) => {
     const route = PAGE_ROUTES[label];
     const cells = DIMS.map((dim, i) => {
-      const val = GOALS_DATA.dimensions[dim] && GOALS_DATA.dimensions[dim][key] || "";
-      const cls = key === "action" ? "cell task-preview" : "cell";
+      const val = key === "目标体系"
+        ? objectiveMarkup(dim)
+        : key === "政策体系"
+          ? policySummaryMarkup(dim)
+        : GOALS_DATA.dimensions[dim] && GOALS_DATA.dimensions[dim][key] || "";
+      const cls = key === "目标体系" ? "cell objective-cell" : key === "政策体系" ? "cell policy-cell" : key === "action" ? "cell task-preview" : "cell";
       // 重点任务特殊处理
       if (key === "action") {
         const tasks = TASKS.filter(t => t.dimension === dim).slice(0, 5);
@@ -100,7 +140,7 @@ function buildMatrix() {
         }
         return `<div class="${cls}"><ul>${links}</ul></div>`;
       }
-      return `<div class="${cls}">${esc(val)}</div>`;
+      return `<div class="${cls}">${key === "目标体系" || key === "政策体系" ? val : esc(val)}</div>`;
     }).join("");
     const rowLabel = route ? `<div class="cell row page-link" data-page="${route}" role="link" tabindex="0">${label}</div>` : `<div class="cell row">${label}</div>`;
     return `${rowLabel}${cells}`;
@@ -460,15 +500,316 @@ function initTicker() {
   }
 }
 
-// ── 总体初始化 ──────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+// 统一列表页渲染引擎（政策体系 / 重大项目 / 应用场景）
+// ════════════════════════════════════════════════════════════
+
+const SCENE_CITY_ORDER = [
+  {
+    name: "杭州市",
+    aliases: ["杭州市", "杭州", "拱墅区", "上城区", "滨江区", "富阳区", "淳安县", "临平区", "钱塘区", "西湖区", "萧山区", "余杭区", "建德市", "桐庐县"]
+  },
+  {
+    name: "宁波市",
+    aliases: ["宁波市", "宁波", "海曙区", "北仑区", "江北区", "宁海县", "鄞州区", "镇海区", "余姚市", "慈溪市", "奉化区", "象山县"]
+  },
+  {
+    name: "温州市",
+    aliases: ["温州市", "温州", "苍南县", "洞头区", "龙湾区", "鹿城区", "泰顺县", "文成县", "永嘉县", "乐清市", "龙港市", "瑞安市", "平阳县", "瓯海区"]
+  },
+  {
+    name: "嘉兴市",
+    aliases: ["嘉兴市", "嘉兴", "海宁市", "嘉善县", "南湖区", "平湖市", "桐乡市", "秀洲区", "海盐县"]
+  },
+  {
+    name: "湖州市",
+    aliases: ["湖州市", "湖州", "德清县", "南浔区", "吴兴区", "长兴县", "安吉县"]
+  },
+  {
+    name: "绍兴市",
+    aliases: ["绍兴市", "绍兴", "滨海新区", "柯桥区", "上虞区", "嵊州市", "新昌县", "越城区", "诸暨市"]
+  },
+  {
+    name: "金华市",
+    aliases: ["金华市", "金华", "金东区", "兰溪市", "婺城区", "义乌市", "浦江县", "永康市", "东阳市", "武义县", "磐安县"]
+  },
+  {
+    name: "衢州市",
+    aliases: ["衢州市", "衢州", "江山市", "开化县", "柯城区", "龙游县", "衢江区", "常山县"]
+  },
+  {
+    name: "舟山市",
+    aliases: ["舟山市", "舟山", "岱山县", "定海区", "普陀区"]
+  },
+  {
+    name: "台州市",
+    aliases: ["台州市", "台州", "黄岩区", "椒江区", "路桥区", "三门县", "仙居县", "温岭市", "临海市", "玉环市", "天台县"]
+  },
+  {
+    name: "丽水市",
+    aliases: ["丽水市", "丽水", "缙云县", "莲都区", "青田县", "庆元县", "松阳县", "遂昌县", "云和县", "景宁县", "龙泉市"]
+  }
+];
+
+const sceneLocationRank = value => {
+  const text = String(value || "").replace(/\s+/g, "");
+  if (!text) return SCENE_CITY_ORDER.length + 1;
+  for (let index = 0; index < SCENE_CITY_ORDER.length; index += 1) {
+    if (SCENE_CITY_ORDER[index].aliases.some(alias => text.includes(alias))) return index + 1;
+  }
+  if (text === "省级" || text === "浙江省级" || text.startsWith("浙江省") || text.includes("全省")) return 0;
+  return SCENE_CITY_ORDER.length + 1;
+};
+
+const PAGE_CONFIG = {
+  policies: {
+    dataKey: "POLICIES_DATA",
+    pageTitle: "重点任务",
+    listTitle: "政策体系",
+    listHeadTitle: "重点任务",
+    apiMode: false,
+    columns: [
+      { key: "id",        label: "编号",   width: "70px" },
+      { key: "name",      label: "政策名称", width: "minmax(280px,2fr)" },
+      { key: "category",  label: "所属领域", width: "minmax(100px,.8fr)" },
+      { key: "issuer",    label: "发文层级", width: "minmax(80px,.65fr)" },
+      { key: "department",label: "责任部门", width: "minmax(160px,1.1fr)" },
+      { key: "date",      label: "发文时间", width: "minmax(100px,.75fr)" },
+    ],
+    filterFields: [
+      { id: "listCategoryFilter", key: "category", label: "所属领域", options: "auto" }
+    ],
+    searchFields: ["name", "department", "issuer"],
+  },
+  projects: {
+    dataKey: "PROJECTS_DATA",
+    pageTitle: "重大项目",
+    listTitle: "重大项目",
+    listHeadTitle: "重大项目",
+    apiMode: true,
+    apiDataPath: "projects",
+    columns: [
+      { key: "序号",              label: "序号",   width: "55px" },
+      { key: "项目名称",           label: "项目名称", width: "minmax(220px,1.8fr)" },
+      { key: "大类",              label: "所属领域", width: "minmax(65px,.5fr)" },
+      { key: "领域",              label: "细分赛道", width: "minmax(130px,1fr)" },
+      { key: "建设地点",           label: "地点",   width: "minmax(80px,.65fr)" },
+      { key: "起止年限",           label: "年限",   width: "minmax(90px,.7fr)", sortable: true, sortType: "year" },
+      { key: "总投资",            label: "总投资（亿元）", width: "minmax(90px,.7fr)", number: true, sortable: true },
+      { key: "2026年计划投资",     label: "2026计划（亿元）", width: "minmax(95px,.72fr)", number: true, sortable: true },
+      { key: "项目业主",           label: "项目业主", width: "minmax(160px,1.1fr)" },
+      { key: "建设性质",           label: "性质",   width: "minmax(65px,.5fr)" },
+    ],
+    filterFields: [
+      { id: "listCategoryFilter", key: "大类", label: "所属领域", options: "auto" },
+      { id: "listLocationFilter", key: "建设地点", label: "地点", options: "auto" },
+      { id: "listNatureFilter", key: "建设性质", label: "性质", options: "auto" }
+    ],
+    searchFields: ["项目名称", "项目业主", "建设地点"],
+  },
+  experts: {
+    dataKey: "EXPERTS_DATA",
+    pageTitle: "专家库",
+    listTitle: "专家库",
+    listHeadTitle: "专家库",
+    apiMode: true,
+    apiDataPath: "members",
+    columns: [
+      { key: "序号",           label: "序号",       width: "55px" },
+      { key: "姓名",           label: "姓名",       width: "minmax(90px,.7fr)" },
+      { key: "所属领域",       label: "所属领域",   width: "minmax(150px,1fr)" },
+      { key: "原委员会职务",   label: "原委员会职务", width: "minmax(120px,.9fr)" },
+      { key: "职务",           label: "职务",       width: "minmax(360px,3fr)" },
+      { key: "备注",           label: "备注",       width: "minmax(220px,1.5fr)" }
+    ],
+    filterFields: [
+      { id: "listExpertDomainFilter", key: "所属领域", label: "所属领域", options: "auto" }
+    ],
+    searchFields: ["姓名", "所属领域", "职务", "备注"]
+  },
+  scenes: {
+    dataKey: "SCENES_DATA",
+    pageTitle: "应用场景",
+    listTitle: "应用场景",
+    listHeadTitle: "应用场景",
+    apiMode: true,
+    apiDataPath: "items",
+    columns: [
+      { key: "序号",      label: "序号",    width: "55px" },
+      { key: "场景名称",   label: "场景名称",  width: "minmax(220px,1.8fr)" },
+      { key: "场景领域",   label: "场景领域",  width: "minmax(180px,1.3fr)" },
+      { key: "所在地点",   label: "地点",    width: "minmax(75px,.6fr)", sortType: "scene-location" },
+      { key: "业主单位",   label: "业主单位",  width: "minmax(160px,1.1fr)" },
+      { key: "主管部门",   label: "主管部门",  width: "minmax(150px,1fr)" },
+    ],
+    filterFields: [
+      { id: "listSceneFieldFilter", key: "场景领域", label: "场景领域", options: "auto" },
+      { id: "listLocationFilter", key: "所在地点", label: "地点", options: "auto" }
+    ],
+    defaultSort: { key: "所在地点", direction: 1 },
+    renumber: true,
+    searchFields: ["场景名称", "业主单位", "所在地点", "主管部门", "场景说明"],
+  },
+};
+
+function initListPage(section) {
+  const cfg = PAGE_CONFIG[section];
+  if (!cfg) return;
+
+  // 加载数据
+  let rawItems = [];
+  if (window[cfg.dataKey]) {
+    const src = window[cfg.dataKey];
+    rawItems = cfg.apiMode ? (src[cfg.apiDataPath] || []) : (src.policies || []);
+    console.log(`[${section}] 加载 ${rawItems.length} 条数据`);
+  }
+
+  const filterFields = cfg.filterFields || [];
+  const sortState = {
+    key: cfg.defaultSort?.key || "",
+    direction: cfg.defaultSort?.direction || 1
+  };
+  const valueAsText = value => Array.isArray(value) ? value.join("、") : String(value ?? "");
+
+  const sortValue = (item, column) => {
+    const value = item[column.key] ?? "";
+    if (column.sortType === "scene-location") return sceneLocationRank(value);
+    if (column.sortType === "year") {
+      const year = String(value).match(/\d{4}/);
+      return year ? Number(year[0]) : null;
+    }
+    if (typeof value === "number") return value;
+    const numeric = Number(value);
+    return value !== "" && Number.isFinite(numeric) ? numeric : String(value);
+  };
+
+  const compareItems = (a, b, column) => {
+    const av = sortValue(a, column);
+    const bv = sortValue(b, column);
+    if (typeof av === "number" && typeof bv === "number") return (av - bv) * sortState.direction;
+    if (typeof av === "number") return -1 * sortState.direction;
+    if (typeof bv === "number") return 1 * sortState.direction;
+    return String(av).localeCompare(String(bv), "zh-CN", { numeric: true }) * sortState.direction;
+  };
+
+  // 构建筛选器
+  const filtersEl = document.getElementById("listFilters");
+  if (filtersEl) {
+    let html = filterFields.map(field => {
+      const options = field.options === "auto"
+        ? [...new Set(rawItems.flatMap(item => {
+          const value = item[field.key];
+          return Array.isArray(value) ? value : [value];
+        }).filter(Boolean))]
+        : field.options || [];
+      return `<select id="${field.id}" aria-label="筛选${field.label}">
+        <option value="">全部${field.label}</option>
+        ${options.map(opt => `<option value="${esc(opt)}">${esc(opt)}</option>`).join("")}
+      </select>`;
+    }).join("");
+    html += `<input id="listSearch" placeholder="搜索${cfg.listTitle}" aria-label="搜索">`;
+    filtersEl.innerHTML = html;
+  }
+
+  const rowsEl = document.getElementById("listRows");
+  const headEl = document.getElementById("listHead");
+  const bodyEl = document.querySelector(".list-body");
+
+  // 渲染函数
+  const render = () => {
+    const q = (document.getElementById("listSearch")?.value || "").trim().toLowerCase();
+
+    const filtered = rawItems.filter(item => {
+      for (const field of filterFields) {
+        const value = document.getElementById(field.id)?.value || "";
+        const itemValue = item[field.key];
+        const matches = Array.isArray(itemValue) ? itemValue.includes(value) : itemValue === value;
+        if (value && !matches) return false;
+      }
+      if (q) {
+        const text = cfg.searchFields.map(f => valueAsText(item[f])).join(" ");
+        if (text.toLowerCase().indexOf(q) === -1) return false;
+      }
+      return true;
+    });
+
+    if (sortState.key) {
+      const column = cfg.columns.find(c => c.key === sortState.key);
+      if (column) filtered.sort((a, b) => compareItems(a, b, column));
+    }
+
+    const colWidths = cfg.columns.map(c => c.width).join(" ");
+
+    // 同时在 .list-body 和表头行上设置 grid 列宽（两处都设保证兼容）
+    if (bodyEl) bodyEl.style.setProperty("--task-grid-columns", colWidths);
+    if (headEl) {
+      headEl.style.gridTemplateColumns = colWidths;
+      headEl.innerHTML = cfg.columns.map(c => {
+        const sortable = c.sortable;
+        const indicator = sortState.key === c.key ? (sortState.direction === 1 ? "▲" : "▼") : "↕";
+        const attrs = sortable
+          ? ` class="list-sortable" data-sort-key="${esc(c.key)}" role="button" tabindex="0" aria-label="按${esc(c.label)}排序"`
+          : "";
+        return `<div${attrs}>${c.label.replace(/\n/g,"<br>")}${sortable ? `<span class="sort-indicator">${indicator}</span>` : ""}</div>`;
+      }).join("");
+    }
+    if (!rowsEl) return;
+    rowsEl.style.gridTemplateColumns = "minmax(0, 1fr)";
+
+    rowsEl.innerHTML = filtered.length
+      ? filtered.map((item, idx) => {
+          const cells = cfg.columns.map(c => {
+            let val = item[c.key] ?? "";
+            if (c.number && typeof val === "number") val = val.toFixed(2);
+            if (c.key === "序号") val = cfg.renumber ? idx + 1 : (typeof val === "number" ? val : idx + 1);
+            const label = val == null ? "—" : esc(valueAsText(val)).replace(/\n/g, "<br>");
+            const cls = c.key === cfg.columns[1].key ? "row-title" : "";
+            return `<div class="${cls}">${label}</div>`;
+          }).join("");
+          return `<article class="list-row">
+            <div class="list-summary">${cells}</div>
+          </article>`;
+        }).join("")
+      : '<div class="list-empty">没有符合条件的记录</div>';
+  };
+
+  filterFields.forEach(field => document.getElementById(field.id)?.addEventListener("change", render));
+  document.getElementById("listSearch")?.addEventListener("input", render);
+  headEl?.addEventListener("click", event => {
+    const cell = event.target.closest("[data-sort-key]");
+    if (!cell) return;
+    const key = cell.dataset.sortKey;
+    sortState.direction = sortState.key === key ? -sortState.direction : 1;
+    sortState.key = key;
+    render();
+  });
+  headEl?.addEventListener("keydown", event => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    const cell = event.target.closest("[data-sort-key]");
+    if (!cell) return;
+    event.preventDefault();
+    cell.click();
+  });
+
+  // 初始渲染
+  render();
+}
+
+// ════════════════════════════════════════════════════════════
+// 总体初始化
+// ════════════════════════════════════════════════════════════
 document.addEventListener("DOMContentLoaded", async () => {
+  const section = document.body.dataset.listPage;
   await loadData();         // 先加载 tasks.json
   buildOrgFlow();    // 组织架构
   buildGoals();       // 目标区域
   buildMatrix();      // 动态生成矩阵内容
   buildRails();       // 动态生成侧栏
   buildMechanism();   // 动态生成机制专题
-  initDrawer();       // 抽屉初始化（含buildFilters）
+  if (!section) initDrawer(); // 仅总图和任务页启用任务抽屉
   initTicker();       // 资讯滚动
   if (document.body.classList.contains("task-page")) openDrawer("all");
+
+  // 列表页自动初始化
+  if (section && PAGE_CONFIG[section]) initListPage(section);
 });

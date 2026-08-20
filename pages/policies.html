@@ -1,35 +1,27 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>政策体系｜浙江省人工智能高质量发展工作图谱</title>
-    <link rel="stylesheet" href="../styles/tokens.css">
-    <link rel="stylesheet" href="../styles/detail.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>政策体系｜浙江省人工智能高质量发展工作图谱</title>
+<link rel="stylesheet" href="../styles/tokens.css">
+<link rel="stylesheet" href="../styles/layout.css">
 </head>
-
-<body data-section="政策体系">
-    <header class="page-header">
-        <div><small>POLICY SYSTEM</small>
-            <h1>政策体系</h1>
-        </div><a href="../index.html">← 返回总图</a>
-    </header>
-    <main class="detail-shell">
-        <section class="detail-intro">
-            <div class="intro-copy">
-                <h2>五大维度政策工具</h2>
-                <p>分类呈现算力、数据、模型、应用、生态领域的政策文件和制度供给。</p>
-            </div>
-        </section>
-        <nav class="dimension-tabs" id="dimensionTabs"></nav>
-        <section class="detail-grid" id="detailGrid"></section>
-    </main>
-    <script src="../data/goals.js"></script>
-    <script src="../data/rail.js"></script>
-    <script src="../data/news.js"></script>
-    <script src="../js/framework.js"></script>
-    <script src="../js/detail.js"></script>
+<body class="list-page" data-list-page="policies">
+<header class="page-header">
+  <div><small>POLICY SYSTEM</small><h1>政策体系</h1></div>
+  <nav class="breadcrumb" aria-label="面包屑导航">
+    <a href="../index.html">工作推进总览</a><span>／</span><a href="details.html">五位一体任务清单</a><span>／</span><strong>政策体系</strong>
+  </nav>
+</header>
+<main class="list-page-content">
+  <div class="filters" id="listFilters"></div>
+  <div class="list-body">
+    <div class="list-head" id="listHead"></div>
+    <div id="listRows"></div>
+  </div>
+</main>
+<script src="../data/policies.js"></script>
+<script src="../js/render.js"></script>
 </body>
-
 </html>
