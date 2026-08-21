@@ -295,13 +295,13 @@ select {
 }
 
 .goal strong {
-  font-size: clamp(17px, 1.65vw, 27px);
-  line-height: 1.05;
+  font-size: clamp(17px, 1.55vw, 24px);
+  line-height: 1.15;
   color: #2563EB
 }
 
 .goal span {
-  font-size: clamp(9px, .78vw, 13px);
+  font-size: clamp(12.5px, 1vw, 16px);
   margin-top: 5px
 }
 
@@ -887,10 +887,6 @@ select {
   font-size: clamp(13px, 1.08vw, 18px)
 }
 
-.goal span {
-  font-size: clamp(11px, .9vw, 15px)
-}
-
 .cell {
   font-size: 13px;
   line-height: 1.14;
@@ -906,7 +902,7 @@ select {
   text-align: left;
   font-family: "方正兰亭黑", "Source Han Sans SC", "PingFang SC", sans-serif;
   font-weight: 400;
-  font-size: 12px;
+  font-size: clamp(11px, .88vw, 14px);
   line-height: 1.35;
   text-wrap: wrap;
 }
@@ -914,6 +910,7 @@ select {
   margin: 0;
   font-family: inherit;
   font-weight: 400;
+  font-size: inherit;
   line-height: 1.35;
   text-align: justify;
   text-justify: inter-ideograph;
@@ -928,10 +925,12 @@ select {
 }
 .cell.policy-cell {
   text-align: center;
+  font-size: clamp(11px, .88vw, 14px);
 }
 .cell.policy-cell .overview-policy-text {
   display: inline;
   max-width: 100%;
+  font-size: inherit;
   line-height: 1.35;
   overflow-wrap: anywhere;
 }
@@ -1603,6 +1602,20 @@ body.list-page { min-height:100vh; background:#F8FAFC; }
   border-bottom: 1px solid #BFDBFE;
 }
 .list-row:last-child { border-bottom: none; }
+.list-row[data-detail-href] {
+  cursor: pointer;
+  transition: background-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+.list-row[data-detail-href]:hover,
+.list-row[data-detail-href]:focus-visible {
+  background: #EFF6FF;
+  box-shadow: inset 4px 0 0 #3b82f6;
+  outline: none;
+}
+.list-row[data-detail-href]:hover .row-title,
+.list-row[data-detail-href]:focus-visible .row-title {
+  color: #1E40AF;
+}
 
 /* 列表行内的 summary：grid 列宽从 .list-body 继承 */
 .list-summary {
@@ -1628,6 +1641,12 @@ body.list-page { min-height:100vh; background:#F8FAFC; }
   text-align: left;
   font-weight: 600;
   color: #1E40AF;
+}
+.list-row-pdf {
+  margin-left: 8px;
+  font-size: 14px;
+  color: #DC2626;
+  vertical-align: middle;
 }
 
 .list-empty {
@@ -1725,23 +1744,50 @@ body.list-page { min-height:100vh; background:#F8FAFC; }
   .goals {
     grid-template-columns: 1fr !important;
     grid-template-rows: auto;
+    min-width: 0;
   }
   .goal {
     border-right: none;
     border-bottom: 1px solid var(--line);
     padding: 8px 6px;
+    min-width: 0;
+    overflow: visible;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    line-height: 1.3;
   }
   .goal:last-child {
     border-bottom: none;
   }
+  /* 营收双目标：窄屏垂直堆叠，避免子项互相挤压 */
   .goal.revenue {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+  }
+  .goal.revenue .goal-item {
+    padding: 4px 2px;
+    border-left: none !important;
+    border-top: 1px dashed #BFDBFE;
+  }
+  .goal.revenue .goal-item:first-child {
+    border-top: none;
   }
   .goal strong {
-    font-size: 16px;
+    font-size: 19px;
+    line-height: 1.2;
+    max-width: 100%;
+    word-break: break-word;
   }
   .goal span {
-    font-size: 11px;
+    font-size: 13px;
+    margin-top: 3px;
+    line-height: 1.35;
+    word-break: break-word;
+  }
+  /* 标志性成果的中文长串允许断行 */
+  .goal span[style*="font-size"],
+  .goal > span {
+    word-break: break-all;
   }
 
   /* 五维矩阵：横向滚动，保证可读 */
@@ -1813,9 +1859,35 @@ body.list-page { min-height:100vh; background:#F8FAFC; }
     gap: 0;
   }
 
-  /* 总体目标：三列 */
+  /* 总体目标：三列，但允许换行防遮挡 */
   .goals {
     grid-template-columns: 1fr 1fr 1fr;
+  }
+  .goal {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.3;
+  }
+  .goal.revenue {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+  }
+  .goal.revenue .goal-item {
+    border-left: none !important;
+    border-top: 1px dashed #BFDBFE;
+    padding: 4px 2px;
+  }
+  .goal.revenue .goal-item:first-child {
+    border-top: none;
+  }
+  .goal strong {
+    font-size: 17px;
+    line-height: 1.2;
+  }
+  .goal span {
+    font-size: 12.5px;
+    margin-top: 3px;
   }
 
   /* 保障体系：四列 */
@@ -1849,9 +1921,28 @@ body.list-page { min-height:100vh; background:#F8FAFC; }
     font-size: 0.7em;
   }
 
-  /* 总体目标 */
+  /* 总体目标：允许换行，防遮挡 */
   .goals {
     gap: 0;
+  }
+  .goal {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .goal.revenue {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+  }
+  .goal.revenue .goal-item {
+    border-left: none !important;
+    border-top: 1px dashed #BFDBFE;
+  }
+  .goal.revenue .goal-item:first-child {
+    border-top: none;
+  }
+  .goal strong {
+    font-size: 19px;
   }
 
   /* 矩阵 */

@@ -548,7 +548,7 @@ body {
   line-height: 1.35;
   border-right: 1px solid #93c5fd;
   border-bottom: 1px solid #93c5fd;
-  font-size: 13px;
+  font-size: clamp(11px, .88vw, 14px);
 }
 .overview-cell.head,
 .overview-row-label {
@@ -565,7 +565,7 @@ body {
   text-align: left;
   font-family: "方正兰亭黑", "Source Han Sans SC", "PingFang SC", sans-serif;
   font-weight: 400;
-  font-size: 12px;
+  font-size: clamp(11px, .88vw, 14px);
   line-height: 1.35;
   text-wrap: wrap;
 }
@@ -573,6 +573,7 @@ body {
   margin: 0;
   font-family: inherit;
   font-weight: 400;
+  font-size: inherit;
   line-height: 1.35;
 }
 .overview-cell.objective-cell strong {
