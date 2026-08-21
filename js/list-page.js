@@ -154,7 +154,7 @@
    * @param {string} raw
    * @returns {string}
    */
-  const normalizeSceneLocation = raw => {
+  function normalizeSceneLocation(raw) {
     const text = String(raw || "").replace(/\s+/g, "");
     if (!text) return "未识别";
     if (text === "省级" || text === "浙江省级" || /^浙江省(?!.*?(杭州|宁波|温州|嘉兴|湖州|绍兴|金华|衢州|舟山|台州|丽水))/.test(text) || text.includes("全省")) return "浙江省";
@@ -163,20 +163,20 @@
     }
     if (text === "开发区") return "金华市";
     return "未识别";
-  };
+  }
 
   /**
    * 场景地点排序：浙江省→11 地级市按 SCENE_CITY_ORDER→未识别。
    * @param {string} value  应为 normalizeSceneLocation 的返回值
    * @returns {number}
    */
-  const sceneLocationRank = value => {
+  function sceneLocationRank(value) {
     const text = String(value || "");
     if (text === "浙江省") return 0;
     const idx = SCENE_CITY_ORDER.findIndex(c => c.name === text);
     if (idx >= 0) return idx + 1;
     return SCENE_CITY_ORDER.length + 1;
-  };
+  }
 
   /**
    * 初始化列表页。
