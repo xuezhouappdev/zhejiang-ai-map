@@ -1,5 +1,5 @@
 const SECTION = document.body.dataset.section;
-const DATA = window.GOALS_DATA || { dimensions: {}, overall: {} };
+const DATA = window.OBJECTS_DATA || { dimensions: {}, overall: {} };
 const DIMS = ["算力", "数据", "模型", "应用", "生态"];
 const params = new URLSearchParams(location.search);
 const selected = params.get("dim") || "";
@@ -19,6 +19,10 @@ function renderOverall() {
 }
 function renderCards() {
   const dims = selected ? DIMS.filter(dim => dim === selected) : DIMS;
-  document.getElementById("detailGrid").innerHTML = dims.map(dim => { const list = items(DATA.dimensions?.[dim]?.[SECTION]); return `<article class="detail-card" data-dim="${dim}"><h3>${dim}</h3><ul>${list.map(item => `<li>${esc(item)}</li>`).join("")}</ul></article>`; }).join("") || '<div class="empty">暂无相关内容</div>';
+  document.getElementById("detailGrid").innerHTML = dims.map(dim => {
+    const source = SECTION === "责任主体" ? DATA.leadership?.[dim] : DATA.dimensions?.[dim]?.[SECTION];
+    const list = items(source);
+    return `<article class="detail-card" data-dim="${dim}"><h3>${dim}</h3><ul>${list.map(item => `<li>${esc(item)}</li>`).join("")}</ul></article>`;
+  }).join("") || '<div class="empty">暂无相关内容</div>';
 }
 renderTabs(); renderOverall(); renderCards();

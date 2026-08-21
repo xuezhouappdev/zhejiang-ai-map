@@ -549,7 +549,7 @@ select {
 .task-summary>div {
   padding: 12px;
   border-right: 1px solid #BFDBFE;
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1.55
 }
 
@@ -906,7 +906,7 @@ select {
   text-align: left;
   font-family: "方正兰亭黑", "Source Han Sans SC", "PingFang SC", sans-serif;
   font-weight: 400;
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1.35;
   text-wrap: wrap;
 }
@@ -921,6 +921,8 @@ select {
 .objective-cell strong {
   margin-right: 5px;
   font-family: inherit;
+  font-size: inherit;
+  font-weight: 700;
   color: #3b82f6;
   white-space: nowrap;
 }

@@ -1,25 +1,24 @@
 // render.js — 总图渲染引擎（浙江省人工智能高质量发展工作图谱）
-// 数据来源: 外部 JSON (tasks.json / goals / rail / mechanism / news)
+// 数据来源: 外部 JSON (tasks.json / objects / rail / mechanism / news)
 // 浏览器兼容性: Chrome / Firefox / Safari / Edge 最新版（支持 ES2022）
 
 // ── 全局数据（从 tasks.json 动态加载）──────────────────────
 let TASKS = [];
 let DIMS = ["算力", "数据", "模型", "应用", "生态"];
 
-const GOALS_DATA = {"version": "2026-08-20", "overall": {"target_2026": {"value": "8300亿元", "desc": "2026年核心产业营收"}, "target_2030": {"value": "1.2万亿元", "desc": "2030年核心产业营收"}, "vision": "人工智能创新发展高地", "milestones": ["中阿应用合作中心", "10万卡算力中心", "开源社区"]}, "dimensions": {"算力": {"目标体系": "2026年：200 EFlops以上；2030年：算力规模全国前三；云服务规模全国领先", "政策体系": "《浙江省推进算力网建设实施方案》《公共算力池建设工作指引》", "重点任务": "有序推进算力布局；加强电力配套保障；实施人工智能券补助", "重大项目": "算力基础设施；网络基础设施", "应用场景": "芯模协同场景", "责任主体": "省发展改革委；省经信厅等"}, "数据": {"目标体系": "2026年：建成不低于10PB的高质量数据集；2030年：建成不低于20PB的高质量数据集", "政策体系": "《浙江省关于支持先行探索数据要素资源化价值化的若干措施（试行）》", "重点任务": "加强公共数据有序利用；布局高端数据标注平台；支持建设可信数据空间", "重大项目": "高质量数据集；数据基础设施", "应用场景": "数据要素×行业应用；高质量数据集应用", "责任主体": "省数据局；省经信厅等"}, "模型": {"目标体系": "2026年：突破20项以上关键核心技术；培育80个以上高价值垂类模型", "政策体系": "《生成式人工智能服务管理暂行办法》", "重点任务": "加强核心技术攻关；建设行业中试基地", "重大项目": "代理模型攻关；基础模型；领域模型；适配攻关", "应用场景": "行业模型应用；数模共振应用", "责任主体": "省委网信办；省科技厅等"}, "应用": {"目标体系": "2026年：打造300个以上典型应用场景；重点行业应用普及率超过70%", "政策体系": "《支持国家人工智能应用中试基地建设的若干举措》；国家人工智能应用中试基地项目调整管理细则", "重点任务": "打造出海服务平台；培育标杆应用场景；鼓励智能体创新应用；支持具身智能应用；支持智能终端消费", "重大项目": "具身智能和人形机器人；应用攻关；中试基地", "应用场景": "智能体应用场景；智能终端应用场景", "责任主体": "省发展改革委；省经信厅等"}, "生态": {"目标体系": "核心产业规模跃升；形成高能级产业生态", "政策体系": "《促进人工智能高质量发展行动方案（2026版）》《关于支持人工智能创新发展的若干措施》", "重点任务": "培育壮大开源社区；布局产业孵化平台；加大人才引育力度；举办赛事会议活动；提升安全能力", "重大项目": "产业；数字化转型", "应用场景": "魔搭社区；AI＋产业", "责任主体": "省发展改革委；省经信厅，省委组织部，省教育厅，省科技厅等"}}};
-
 const RAIL_DATA = {"version": "2026-08-20", "leftRail": {"label": "工作体系", "items": [{"name": "例会", "desc": ["协调", "机制"], "interactive": false}, {"name": "统计", "desc": ["监测", "机制"], "interactive": false}, {"name": "专题", "desc": ["调研", "机制"], "interactive": true}, {"name": "跟踪", "desc": ["调度", "机制"], "interactive": false}, {"name": "安全", "desc": ["保障", "机制"], "interactive": false}, {"name": "评价", "desc": ["推广", "机制"], "interactive": false}]}, "rightRail": {"label": "评价体系", "items": [{"name": "目标", "desc": ["监测"], "interactive": false}, {"name": "政策", "desc": ["评估"], "interactive": false}, {"name": "任务", "desc": ["调度"], "interactive": false}, {"name": "项目", "desc": ["跟踪"], "interactive": false}, {"name": "综合", "desc": ["评价"], "interactive": false}, {"name": "通报", "desc": ["晾晒"], "interactive": false}]}};
 
 const MECH_DATA = {"version": "2026-08-20", "chain": ["专班研究", "办公室协调", "领导小组审议"], "topics": ["算力专题", "数据专题", "模型专题", "应用专题", "生态专题"], "paradigm": "4353工作范式（分类分层分级）"};
 
-const OBJECTS_DATA = window.OBJECTS_DATA || { dimensions: {} };
+const OBJECTS_DATA = window.OBJECTS_DATA || { overall: {}, dimensions: {} };
 const objectiveMarkup = dimension => {
   const target = OBJECTS_DATA.dimensions?.[dimension];
-  if (!target) return `<p>${esc(GOALS_DATA.dimensions?.[dimension]?.["目标体系"] || "")}</p>`;
+  if (!target) return `<p>${esc(splitField(OBJECTS_DATA.dimensions?.[dimension]?.["目标体系"]).join("；"))}</p>`;
   return ["2026年", "2030年"]
     .map(year => `<p><strong>${year}</strong>${esc(target[year] || "")}</p>`)
     .join("");
 };
+const splitField = value => String(value || "").split("；").map(item => item.trim()).filter(Boolean);
 const policiesByDim = (() => {
   const all = window.POLICIES_DATA?.policies || [];
   const out = {};
@@ -30,7 +29,7 @@ const policiesByDim = (() => {
 })();
 const policySummaryMarkup = dimension => {
   const list = policiesByDim[dimension] || [];
-  const shown = list.slice(0, 2);
+  const shown = list.slice(0, 1);
   const remain = list.length - shown.length;
   if (!list.length) return '<span class="overview-empty">暂无政策数据</span>';
   const count = remain > 0
@@ -124,7 +123,7 @@ function buildMatrix() {
         ? objectiveMarkup(dim)
         : key === "政策体系"
           ? policySummaryMarkup(dim)
-        : GOALS_DATA.dimensions[dim] && GOALS_DATA.dimensions[dim][key] || "";
+        : OBJECTS_DATA.dimensions[dim] && OBJECTS_DATA.dimensions[dim][key] || "";
       const cls = key === "目标体系" ? "cell objective-cell" : key === "政策体系" ? "cell policy-cell" : key === "action" ? "cell task-preview" : "cell";
       // 重点任务特殊处理
       if (key === "action") {
@@ -167,7 +166,7 @@ function buildOrgFlow() {
 function buildGoals() {
   const el = document.getElementById("goalsSection");
   if (!el) return;
-  const o = GOALS_DATA.overall;
+  const o = OBJECTS_DATA.overall;
   el.innerHTML = `
     <div class="goal revenue">
       <div class="goal-item"><strong>${o.target_2026.value}</strong><span>${o.target_2026.desc}</span></div>

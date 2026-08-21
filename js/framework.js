@@ -1,6 +1,6 @@
 (function () {
-  const data = window.GOALS_DATA || { overall: {}, dimensions: {} };
-  const objects = window.OBJECTS_DATA || { dimensions: {} };
+  const data = window.OBJECTS_DATA || { overall: {}, dimensions: {} };
+  const objects = data;
   const projects = window.PROJECTS_DATA?.projects || [];
   const rails = window.RAIL_DATA || { leftRail: { items: [] }, rightRail: { items: [] } };
   const news = window.NEWS_DATA?.items || [];
@@ -110,10 +110,10 @@
       const active = section === label ? " active" : "";
       const values = dims
         .map(dim => {
-          // 政策体系行：从 policies.js 按维度取政策名称列表（最多显示2条，后跟等N项）
+          // 政策体系行：从 policies.js 仅显示首条政策，后跟等N项
           if (label === "政策体系") {
             const list = policiesByDim[dim] || [];
-            const MAX_SHOW = 2;
+            const MAX_SHOW = 1;
             const shown = list.slice(0, MAX_SHOW);
             const remain = list.length - MAX_SHOW;
             let content;
@@ -143,6 +143,16 @@
           }
           if (label === "目标体系") {
             return `<div class="overview-cell objective-cell">${objectiveMarkup(dim)}</div>`;
+          }
+          if (label === "应用场景") {
+            return '<div class="overview-cell">-</div>';
+          }
+          if (label === "责任主体") {
+            const text = data.leadership?.[dim] || "";
+            const content = text
+              ? esc(text)
+              : '<span class="overview-empty">暂无责任主体数据</span>';
+            return `<div class="overview-cell">${content}</div>`;
           }
           const list = split(data.dimensions?.[dim]?.[rowKey(label)]);
           const content = esc(list.join("；"));
