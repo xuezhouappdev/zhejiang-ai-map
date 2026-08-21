@@ -361,6 +361,8 @@
       console.warn("[project-drawer] 未找到项目", id);
       return;
     }
+    const drawer = document.getElementById("projectDrawer");
+    if (drawer) drawer.dataset.projectId = String(id);
     const records = (store.byProjectId[id] || []).slice().sort((a, b) =>
       (b.month || "").localeCompare(a.month || "")
     );
@@ -374,7 +376,6 @@
           ? `<section class="pd-section">${renderPilotBasePlaceholder(project)}</section>`
           : `<section class="pd-section"><h3>填报本月调度</h3>${renderForm(project, records)}</section>`);
     }
-    const drawer = document.getElementById("projectDrawer");
     const backdrop = document.getElementById("pdBackdrop");
     drawer?.classList.add("open");
     backdrop?.classList.add("open");
