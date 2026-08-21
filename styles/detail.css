@@ -606,6 +606,9 @@ body {
   text-align: left;
   font-size: 13.5px;
 }
+.overview-task-list.two-col {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
 .overview-task-list li {
   min-width: 0;
   display: flex;

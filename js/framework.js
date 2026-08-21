@@ -156,11 +156,11 @@
           if (label === "目标体系") {
             return `<div class="overview-cell objective-cell">${objectiveMarkup(dim)}</div>`;
           }
-          // 应用场景行：典型场景均属"应用"维度，按 category.main 分类计数，其余维度留 —
+          // 应用场景行：典型场景均属"应用"维度，按 category.main 分类两列展示，其余维度留 —
           if (label === "应用场景") {
             if (dim !== "应用") return '<div class="overview-cell"><span class="overview-empty">—</span></div>';
             const content = scenesByMain.length
-              ? `<ul class="overview-task-list">${scenesByMain.map(([k, v]) => `<li>${esc(k)} ${v}项</li>`).join("")}</ul>`
+              ? `<ul class="overview-task-list two-col">${scenesByMain.map(([k]) => `<li>${esc(k)}</li>`).join("")}</ul>`
               : '<span class="overview-empty">暂无应用场景数据</span>';
             return `<div class="overview-cell">${content}</div>`;
           }
