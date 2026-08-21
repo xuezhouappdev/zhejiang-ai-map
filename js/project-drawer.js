@@ -358,17 +358,22 @@
     (base.highlights || []).find(item => item.name === task) || null;
 
   const renderBaseOverview = (project, base) => {
+    const highlights = base.highlights || [];
+    const averageProgress = highlights.length
+      ? Math.round(highlights.reduce((sum, metric) => sum + Number(metric.progress || 0), 0) / highlights.length)
+      : 0;
     let html = '<section class="pd-section pd-base-overview-section">';
-    html += '<div class="pd-base-section-head"><div><span class="pd-base-kicker">已有情况与目标</span><h3>基地基线、年度计划、三年行动目标</h3></div>';
-    html += '<span class="pd-base-source">' + esc(baseData.asOf || "资料基线") + '</span></div>';
+    html += '<div class="pd-base-section-head"><div><span class="pd-base-kicker">目标测算</span><h3>年度计划与三年行动进度</h3></div>';
+    html += '<span class="pd-base-source">综合完成度约 ' + averageProgress + '%</span></div>';
     html += '<div class="pd-base-overview-cards">';
-    html += '<article class="pd-base-overview-card pd-base-card-current"><span>已有基线</span><p>' + esc(base.baselineSummary || "暂无已有情况资料") + '</p><small>来源：' + esc(baseData.source || "基地资料") + '</small></article>';
-    html += '<article class="pd-base-overview-card pd-base-card-annual"><span>2026年度计划</span><strong>' + esc(fmtYi(project["2026年计划投资"])) + '</strong><p>' + esc(baseData.annualPlanHint || "以国家批复绩效目标和年度任务书为准") + '</p></article>';
-    html += '<article class="pd-base-overview-card pd-base-card-action"><span>三年行动目标</span><p>' + esc(base.actionTarget || "暂无三年行动目标资料") + '</p><small>用于填报时对照当前阶段进度</small></article>';
+    html += '<article class="pd-base-overview-card pd-base-card-annual"><span>2026年度计划投资</span><strong>' + esc(fmtYi(project["2026年计划投资"])) + '</strong><small>项目年度投资计划</small></article>';
+    html += '<article class="pd-base-overview-card pd-base-card-action pd-base-card-action-wide"><span>三年行动综合进度</span><strong>' + averageProgress + '%</strong><div class="pd-base-progress-track"><i style="width:' + averageProgress + '%"></i></div><small>按各项目标当前值与目标值测算</small></article>';
     html += '</div><div class="pd-base-metric-grid">';
-    (base.highlights || []).forEach(metric => {
-      html += '<article class="pd-base-metric-card"><div class="pd-base-metric-title"><b>' + esc(metric.name) + '</b><span>推进中</span></div>';
-      html += '<p><em>已有</em>' + esc(metric.baseline) + '</p><p><em>目标</em>' + esc(metric.target) + '</p></article>';
+    highlights.forEach(metric => {
+      const progress = Math.max(0, Math.min(100, Number(metric.progress || 0)));
+      html += '<article class="pd-base-metric-card"><div class="pd-base-metric-title"><b>' + esc(metric.name) + '</b><span>' + progress + '%</span></div>';
+      html += '<div class="pd-base-progress-track"><i style="width:' + progress + '%"></i></div>';
+      html += '<div class="pd-base-metric-values"><span>' + esc(metric.currentDisplay || "当前值待补充") + '</span><span>目标 ' + esc(metric.targetDisplay || "待补充") + '</span></div></article>';
     });
     html += '</div></section>';
     return html;
@@ -386,9 +391,12 @@
     html += '<span class="pd-base-task-status ' + (filled ? "is-filled" : "") + '">' + (filled ? "已填报" : "待填报") + '</span></summary>';
     html += '<div class="pd-base-task-content">';
     if (metric) {
-      html += '<div class="pd-base-reference"><span>已有情况</span><p>' + esc(metric.baseline) + '</p><span>三年行动目标</span><p>' + esc(metric.target) + '</p></div>';
+      const progress = Math.max(0, Math.min(100, Number(metric.progress || 0)));
+      html += '<div class="pd-base-target-meter"><div class="pd-base-target-meter-head"><span>目标测算进度</span><b>' + progress + '%</b></div>';
+      html += '<div class="pd-base-progress-track"><i style="width:' + progress + '%"></i></div>';
+      html += '<div class="pd-base-metric-values"><span>' + esc(metric.currentDisplay || "当前值待补充") + '</span><span>目标 ' + esc(metric.targetDisplay || "待补充") + '</span></div></div>';
     } else {
-      html += '<div class="pd-base-reference"><span>填报提示</span><p>' + esc(baseData.annualPlanHint || "请依据正式任务书填写") + '</p></div>';
+      html += '<div class="pd-base-target-meter pd-base-target-pending"><div class="pd-base-target-meter-head"><span>目标测算进度</span><b>待补录</b></div><p>' + esc(baseData.annualPlanHint || "请依据正式任务书填写") + '</p></div>';
     }
     html += '<div class="pd-base-field-grid">';
     html += '<label>2026年度计划<textarea data-base-field="annualPlan" rows="3" placeholder="请填入国家批复的年度绩效目标和年度任务">' + esc(saved.annualPlan || defaultPlan) + '</textarea></label>';
@@ -436,10 +444,10 @@
       <h3>中试基地调度（暂未上线）</h3>
       <p>本项目为「国家人工智能应用中试基地」，调度内容需填写：</p>
       <ul>
-        <li><b>附表 1</b>：任务完成情况表（8 类任务：算力、模型、数据、应用验证、行业资源汇聚、标准评测、个性化指标、投资完成）</li>
-        <li><b>附表 2</b>：能力与需求清单（动态行、多选 checkbox）</li>
+        <li>任务完成情况：8 类任务，包含算力、模型、数据、应用验证、行业资源汇聚、标准评测、个性化指标、投资完成</li>
+        <li>能力与需求清单：动态记录能力、需求和对接情况</li>
       </ul>
-      <p>功能将在 Phase 2 上线。届时附表 1/2 字段、Word 导出将与基地每月调度表格保持一致。</p>
+      <p>功能将在 Phase 2 上线。届时字段和 Word 导出将与基地每月调度表格保持一致。</p>
       <p class="pd-pilot-meta">项目：${esc(project.项目名称)}</p>
     </div>`;
 
@@ -452,7 +460,7 @@
       const needs = Array.isArray(record.capabilityNeeds) ? record.capabilityNeeds.filter(item => item.name).length : 0;
       return '<tr><td class="pd-month">' + esc(record.month) + '</td><td>' + (record.isDraft ? "草稿" : "已提交") + '</td><td class="pd-num">' + filled + ' / 8</td><td class="pd-num">' + needs + '</td><td class="pd-num ' + (issues ? "pd-issue" : "") + '">' + issues + '</td><td class="pd-time">' + esc(record.updatedAt || "—") + '</td></tr>';
     }).join("");
-    return '<table class="pd-history pd-base-history"><thead><tr><th>月份</th><th>状态</th><th>附表1已填</th><th>附表2记录</th><th>协调事项</th><th>更新时间</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    return '<table class="pd-history pd-base-history"><thead><tr><th>月份</th><th>状态</th><th>任务已填</th><th>能力／需求记录</th><th>协调事项</th><th>更新时间</th></tr></thead><tbody>' + rows + '</tbody></table>';
   };
 
   const renderBaseWorkspace = (project, records) => {
@@ -464,7 +472,7 @@
     const needRows = current.capabilityNeeds && current.capabilityNeeds.length ? current.capabilityNeeds : [{}];
     let taskIndex = 0;
     let html = renderBaseOverview(project, base);
-    html += '<section class="pd-section pd-base-form-section"><div class="pd-base-section-head"><div><span class="pd-base-kicker">月度填报</span><h3>附表1、附表2</h3></div><span class="pd-base-source">用户填写项完整保留</span></div>';
+    html += '<section class="pd-section pd-base-form-section"><div class="pd-base-section-head"><div><span class="pd-base-kicker">月度填报</span><h3>本月填报</h3></div><span class="pd-base-source">用户填写项完整保留</span></div>';
     html += '<form class="pd-base-form" id="pdBaseForm">';
     html += '<div class="pd-base-meta-grid">';
     html += '<label>调度月份<input type="month" name="month" value="' + esc(current.month || defaultMonth) + '" required></label>';
@@ -473,7 +481,7 @@
     html += '<label>联系人<input type="text" name="contact" value="' + esc(current.contact || "") + '" placeholder="姓名"></label>';
     html += '<label>联系电话<input type="tel" name="phone" value="' + esc(current.phone || "") + '" placeholder="手机或办公电话"></label>';
     html += '</div>';
-    html += '<div class="pd-base-tabs" role="tablist"><button type="button" class="pd-base-tab is-active" data-base-tab="tasks" role="tab" aria-selected="true">任务完成情况（附表1）</button><button type="button" class="pd-base-tab" data-base-tab="needs" role="tab" aria-selected="false">能力与需求（附表2）</button></div>';
+    html += '<div class="pd-base-tabs" role="tablist"><button type="button" class="pd-base-tab is-active" data-base-tab="tasks" role="tab" aria-selected="true">任务完成情况</button><button type="button" class="pd-base-tab" data-base-tab="needs" role="tab" aria-selected="false">能力与需求</button></div>';
     html += '<div class="pd-base-panel" data-base-panel="tasks">';
     BASE_TASK_GROUPS.forEach(group => {
       html += '<div class="pd-base-task-group"><h4>' + esc(group.name) + '</h4>';
