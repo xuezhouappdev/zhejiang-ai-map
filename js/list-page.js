@@ -78,16 +78,16 @@
       apiMode: true,
       apiDataPath: "projects",
       columns: [
-        { key: "序号",             label: "序号",   width: "55px" },
-        { key: "项目名称",          label: "项目名称", width: "minmax(220px,1.8fr)" },
-        { key: "大类",             label: "所属领域", width: "minmax(65px,.5fr)" },
-        { key: "领域",             label: "细分赛道", width: "minmax(130px,1fr)" },
-        { key: "建设地点",          label: "地点",   width: "minmax(80px,.65fr)" },
-        { key: "起止年限",          label: "年限",   width: "minmax(90px,.7fr)", sortable: true, sortType: "year" },
-        { key: "总投资",           label: "总投资（亿元）", width: "minmax(90px,.7fr)", number: true, sortable: true },
-        { key: "2026年计划投资",    label: "2026计划（亿元）", width: "minmax(95px,.72fr)", number: true, sortable: true },
-        { key: "项目业主",          label: "项目业主", width: "minmax(160px,1.1fr)" },
-        { key: "建设性质",          label: "性质",   width: "minmax(65px,.5fr)" },
+        { key: "序号",             label: "序号",   width: "50px" },
+        { key: "项目名称",          label: "项目名称", width: "minmax(180px,2.2fr)" },
+        { key: "大类",             label: "所属领域", width: "66px" },
+        { key: "领域",             label: "细分赛道", width: "minmax(105px,1fr)" },
+        { key: "建设地点",          label: "地点",   width: "70px" },
+        { key: "起止年限",          label: "年限",   width: "76px", sortable: true, sortType: "year" },
+        { key: "总投资",           label: "总投资（亿元）", width: "78px", number: true, sortable: true },
+        { key: "2026年计划投资",    label: "2026计划（亿元）", width: "90px", number: true, sortable: true },
+        { key: "项目业主",          label: "项目业主", width: "minmax(140px,1.2fr)" },
+        { key: "建设性质",          label: "性质",   width: "60px" },
       ],
       filterFields: [
         { id: "listCategoryFilter", key: "大类", label: "所属领域", options: "auto" },
@@ -126,13 +126,13 @@
       columns: [
         { key: "序号",      label: "序号",     width: "55px" },
         { key: "场景名称",   label: "场景名称",   width: "minmax(220px,1.8fr)" },
-        { key: "场景领域",   label: "场景领域",   width: "minmax(180px,1.3fr)" },
+        { key: "场景领域",   label: "场景领域",   width: "minmax(180px,1.3fr)", getValue: item => item.category?.main || "" },
         { key: "所在地点",   label: "地点",     width: "minmax(75px,.6fr)", sortType: "scene-location" },
         { key: "业主单位",   label: "业主单位",   width: "minmax(160px,1.1fr)" },
         { key: "主管部门",   label: "主管部门",   width: "minmax(150px,1fr)" },
       ],
       filterFields: [
-        { id: "listSceneFieldFilter", key: "场景领域", label: "场景领域", options: "auto" },
+        { id: "listSceneFieldFilter", key: "场景领域", label: "场景领域", options: "auto", getValue: item => item.category?.main || "" },
         { id: "listLocationFilter", key: "所在地点", label: "地点", options: "auto" },
       ],
       defaultSort: { key: "所在地点", direction: 1 },
@@ -186,7 +186,7 @@
      * @returns {string|number}
      */
     const sortValue = (item, column) => {
-      const value = item[column.key] ?? "";
+      const value = (typeof column.getValue === "function" ? column.getValue(item) : item[column.key]) ?? "";
       if (column.sortType === "scene-location") return sceneLocationRank(value);
       if (column.sortType === "year") {
         const year = String(value).match(/\d{4}/);
@@ -219,7 +219,7 @@
       let html = filterFields.map(field => {
         const options = field.options === "auto"
           ? [...new Set(rawItems.flatMap(item => {
-            const v = item[field.key];
+            const v = typeof field.getValue === "function" ? field.getValue(item) : item[field.key];
             return Array.isArray(v) ? v : [v];
           }).filter(Boolean))]
           : field.options || [];
@@ -246,7 +246,7 @@
       const filtered = rawItems.filter(item => {
         for (const field of filterFields) {
           const value = document.getElementById(field.id)?.value || "";
-          const itemValue = item[field.key];
+          const itemValue = typeof field.getValue === "function" ? field.getValue(item) : item[field.key];
           const matches = Array.isArray(itemValue) ? itemValue.includes(value) : itemValue === value;
           if (value && !matches) return false;
         }
@@ -263,7 +263,7 @@
       }
 
       const actionColumn = section === "projects"
-        ? { key: "__dispatch", label: "项目进展", width: "100px" }
+        ? { key: "__dispatch", label: "项目进展", width: "110px" }
         : null;
       const displayColumns = actionColumn ? [...cfg.columns, actionColumn] : cfg.columns;
       const colWidths = displayColumns.map(c => c.width).join(" ");
@@ -289,7 +289,7 @@
       rowsEl.innerHTML = filtered.length
         ? filtered.map((item, idx) => {
           const cells = cfg.columns.map(c => {
-            let val = item[c.key] ?? "";
+            let val = (typeof c.getValue === "function" ? c.getValue(item) : item[c.key]) ?? "";
             if (c.number && typeof val === "number") val = val.toFixed(2);
             if (c.key === "序号") val = cfg.renumber ? idx + 1 : (typeof val === "number" ? val : idx + 1);
             const label = val == null ? "—" : esc(valueAsText(val)).replace(/\n/g, "<br>");

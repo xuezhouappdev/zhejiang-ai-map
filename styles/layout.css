@@ -1667,6 +1667,17 @@ body.list-page { min-height:100vh; background:#F8FAFC; }
   }
 }
 
+/* 平板及窄桌面：项目清单保留完整列结构，整体横向滚动，避免操作列挤到下一行 */
+@media (min-width:901px) and (max-width:1180px) {
+  body.list-page { overflow-x: auto; }
+  .list-page > .page-header,
+  .list-page-content {
+    width: 1120px;
+    margin-left: 12px;
+    margin-right: 12px;
+  }
+}
+
 /* ════════════════════════════════════════════════════════════
    移动端全局适配
    策略：主页允许横向滚动（矩阵横屏展示），副页/详情页彻底垂直堆叠
@@ -2080,4 +2091,3 @@ body.list-page { min-height:100vh; background:#F8FAFC; }
     margin-right: 8px;
   }
 }
-
