@@ -971,32 +971,21 @@ select {
 
 @media(max-width:900px) {
   .app {
-    padding: 10px
-  }
-
-  .toolbar {
-    min-width: 1120px
-  }
-
-  .atlas {
-    min-width: 1120px
-  }
-
-  .app {
-    overflow-x: auto
+    padding: 10px;
+    overflow-x: auto;
   }
 
   .drawer {
-    inset: 1vh 1vw
+    inset: 1vh 1vw;
   }
 
   .list-head,
   .task-summary {
-    grid-template-columns: 2fr .7fr 1fr 110px
+    grid-template-columns: 2fr .7fr 1fr 110px;
   }
 
   .meta {
-    grid-template-columns: 1fr 1fr
+    grid-template-columns: 1fr 1fr;
   }
 }
 
@@ -1658,3 +1647,346 @@ body.list-page { min-height:100vh; background:#F8FAFC; }
     margin-right: 12px;
   }
 }
+
+/* ════════════════════════════════════════════════════════════
+   移动端全局适配
+   策略：主页允许横向滚动（矩阵横屏展示），副页/详情页彻底垂直堆叠
+   ════════════════════════════════════════════════════════════ */
+
+/* ── 移动端基础：禁用固定宽度陷阱 ── */
+@media (max-width: 1024px) {
+  .toolbar {
+    min-width: unset;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .atlas {
+    min-width: unset;
+    width: 100%;
+    /* 允许横向滚动，但不加硬约束 */
+  }
+  .app {
+    overflow-x: auto;
+  }
+}
+
+/* ── 手机竖屏（≤480px）：全部垂直堆叠 ── */
+@media (max-width: 480px) {
+
+  /* 整体容器 */
+  .app {
+    padding: 8px;
+    overflow-x: hidden;
+  }
+
+  /* 工具栏 */
+  .toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .toolbar h1 {
+    font-size: 15px;
+    margin-top: 2px;
+  }
+  .hint {
+    display: none;
+  }
+
+  /* 顶栏三卡片：垂直堆叠 */
+  .top {
+    grid-template-columns: 1fr !important;
+    gap: 6px;
+    padding: 6px;
+  }
+  .top-card {
+    min-height: 160px;
+  }
+  .top-head {
+    font-size: 13px !important;
+  }
+
+  /* 侧边栏：隐藏（仅展示） */
+  .rail {
+    display: none;
+  }
+  .main {
+    grid-template-columns: 0 1fr 0 !important;
+    padding: 0 0 8px;
+    gap: 0;
+  }
+
+  /* 中间区域 */
+  .center {
+    gap: 6px;
+  }
+
+  /* 总体目标栏 */
+  .goals {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto;
+  }
+  .goal {
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    padding: 8px 6px;
+  }
+  .goal:last-child {
+    border-bottom: none;
+  }
+  .goal.revenue {
+    grid-template-columns: 1fr 1fr;
+  }
+  .goal strong {
+    font-size: 16px;
+  }
+  .goal span {
+    font-size: 11px;
+  }
+
+  /* 五维矩阵：横向滚动，保证可读 */
+  .matrix {
+    min-width: 520px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .cell {
+    font-size: 11px !important;
+    padding: 4px 5px;
+    min-width: 90px;
+  }
+  .cell.head,
+  .cell.row {
+    font-size: 13px !important;
+  }
+
+  /* 保障体系：单列垂直堆叠 */
+  .guarantee-panel {
+    gap: 6px;
+  }
+  .guarantee-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 6px;
+  }
+  .guarantee {
+    font-size: 12px;
+    padding: 6px;
+  }
+
+  /* 资讯滚动栏 */
+  .news-ticker {
+    flex-direction: column;
+    height: auto;
+    min-height: 0;
+  }
+  .ticker-label {
+    width: 100%;
+    padding: 6px 12px;
+  }
+  .ticker-label::after {
+    display: none;
+  }
+  .ticker-window {
+    margin-left: 0;
+    height: 36px;
+  }
+}
+
+/* ── 手机横屏 / 大手机 / 小平板（481–768px）：轻量适配 ── */
+@media (min-width: 481px) and (max-width: 768px) {
+
+  .app {
+    padding: 12px;
+  }
+
+  /* 顶栏三卡片：两列 + 一列 */
+  .top {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* 侧边栏隐藏 */
+  .rail {
+    display: none;
+  }
+  .main {
+    grid-template-columns: 0 1fr 0 !important;
+    gap: 0;
+  }
+
+  /* 总体目标：三列 */
+  .goals {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  /* 保障体系：四列 */
+  .guarantee-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+
+  /* 矩阵横向滚动 */
+  .matrix {
+    min-width: 700px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ── 大手机 / 小平板横屏（769–1024px）── */
+@media (min-width: 769px) and (max-width: 1024px) {
+
+  .app {
+    padding: 16px;
+  }
+
+  /* 顶栏：保持三列但压缩间距 */
+  .top {
+    padding: 5px 6px;
+    gap: 5px;
+  }
+
+  /* 侧边栏窄显 */
+  .rail {
+    font-size: 0.7em;
+  }
+
+  /* 总体目标 */
+  .goals {
+    gap: 0;
+  }
+
+  /* 矩阵 */
+  .matrix {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* 保障体系 */
+  .guarantee-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   副页（secondary-overview）移动端适配
+   ════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* 去除 min-width 硬约束 */
+  .secondary-overview {
+    min-width: unset !important;
+    width: calc(100% - 24px);
+    padding: 0 4px;
+    /* 去除左右侧栏，改为上下布局 */
+    grid-template-columns: 0 minmax(0, 1fr) 0 !important;
+    gap: 4px;
+    overflow-x: hidden;
+  }
+
+  .overview-center {
+    /* 垂直堆叠各行 */
+    grid-template-rows: auto auto auto auto auto;
+    height: auto;
+  }
+
+  /* 总体目标：4列→2列→1列 */
+  .overview-goals {
+    grid-template-columns: 1fr 1fr;
+    overflow: hidden;
+  }
+  .overview-goals > div {
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+  .overview-goals strong {
+    font-size: 16px;
+  }
+
+  /* 矩阵：横向滚动 */
+  .overview-matrix {
+    min-width: 560px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    /* 固定表头行 */
+    position: relative;
+  }
+  .overview-cell,
+  .overview-row-label {
+    font-size: 11px;
+    padding: 5px 6px;
+    min-width: 80px;
+  }
+  .overview-cell.head,
+  .overview-row-label {
+    font-size: 13px;
+  }
+
+  /* 保障体系：2列 */
+  .overview-guarantee-panel {
+    gap: 6px;
+  }
+  .overview-guarantee-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 6px;
+  }
+  .overview-guarantee-title {
+    font-size: 14px;
+  }
+}
+
+/* ── 详情页移动端 ── */
+@media (max-width: 640px) {
+
+  .detail-shell,
+  .framework-overview,
+  .subpage-news {
+    width: calc(100% - 16px) !important;
+    margin-left: 8px;
+    margin-right: 8px;
+  }
+
+  .page-header {
+    padding: 12px 14px;
+  }
+  .page-header h1 {
+    font-size: 16px;
+  }
+
+  .detail-intro {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .detail-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px;
+  }
+
+  .framework-overview {
+    grid-template-columns: 1fr !important;
+    gap: 8px;
+  }
+  .framework-title,
+  .framework-result,
+  .framework-rail,
+  .framework-rail:last-child {
+    grid-column: 1 !important;
+  }
+
+  /* 列表页 */
+  .filters {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .filters select,
+  .filters input {
+    width: 100% !important;
+    min-width: 0 !important;
+    flex: none !important;
+  }
+  .list-page > .page-header,
+  .list-page-content {
+    width: calc(100% - 16px) !important;
+    margin-left: 8px;
+    margin-right: 8px;
+  }
+}
+
