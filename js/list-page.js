@@ -26,9 +26,12 @@
   /**
    * @typedef {Object} FilterField
    * @property {string} id          DOM 元素 id
-   * @property {string} key          数据字段名
+   * @property {string} key         数据字段名
    * @property {string} label
    * @property {"auto"|string[]} options
+   * @property {(item:Object)=>any} [getValue]     自定义取值（用于归一）
+   * @property {string[]} [excludeFromOptions]      下拉里要排除的选项
+   * @property {(a:string,b:string)=>number} [compareValues]  下拉排序
    */
 
   /**
@@ -127,13 +130,18 @@
         { key: "序号",      label: "序号",     width: "55px" },
         { key: "场景名称",   label: "场景名称",   width: "minmax(220px,1.8fr)" },
         { key: "场景领域",   label: "场景领域",   width: "minmax(180px,1.3fr)", getValue: item => item.category?.main || "" },
-        { key: "所在地点",   label: "地点",     width: "minmax(75px,.6fr)", sortType: "scene-location" },
+        { key: "所在地点",   label: "地点",     width: "minmax(75px,.6fr)", sortType: "scene-location", sortable: true, getValue: normalizeSceneLocation },
         { key: "业主单位",   label: "业主单位",   width: "minmax(160px,1.1fr)" },
         { key: "主管部门",   label: "主管部门",   width: "minmax(150px,1fr)" },
       ],
       filterFields: [
-        { id: "listSceneFieldFilter", key: "场景领域", label: "场景领域", options: "auto", getValue: item => item.category?.main || "" },
-        { id: "listLocationFilter", key: "所在地点", label: "地点", options: "auto" },
+        { id: "listSceneFieldFilter", key: "场景领域", label: "场景领域", options: "auto", getValue: item => item.category?.main || "",
+          compareValues: (a, b) => {
+            const order = ["产业升级","民生服务","社会治理","科技创新","跨界融合","国际合作","其他"];
+            return order.indexOf(a) - order.indexOf(b);
+          } },
+        { id: "listLocationFilter", key: "所在地点", label: "地点", options: "auto", getValue: normalizeSceneLocation, excludeFromOptions: ["未识别"],
+          compareValues: (a, b) => sceneLocationRank(a) - sceneLocationRank(b) },
       ],
       defaultSort: { key: "所在地点", direction: 1 },
       renumber: true,
@@ -142,17 +150,31 @@
   };
 
   /**
-   * 场景地点排序：按浙江省 11 地级市排序，省级排第一，未识别排最后。
-   * @param {string} value
+   * 规范化场景地点："浙江省" / 11 个地级市 / "未识别"。
+   * @param {string} raw
+   * @returns {string}
+   */
+  const normalizeSceneLocation = raw => {
+    const text = String(raw || "").replace(/\s+/g, "");
+    if (!text) return "未识别";
+    if (text === "省级" || text === "浙江省级" || /^浙江省(?!.*?(杭州|宁波|温州|嘉兴|湖州|绍兴|金华|衢州|舟山|台州|丽水))/.test(text) || text.includes("全省")) return "浙江省";
+    for (const city of SCENE_CITY_ORDER) {
+      if (city.aliases.some(alias => text.includes(alias))) return city.name;
+    }
+    if (text === "开发区") return "金华市";
+    return "未识别";
+  };
+
+  /**
+   * 场景地点排序：浙江省→11 地级市按 SCENE_CITY_ORDER→未识别。
+   * @param {string} value  应为 normalizeSceneLocation 的返回值
    * @returns {number}
    */
   const sceneLocationRank = value => {
-    const text = String(value || "").replace(/\s+/g, "");
-    if (!text) return SCENE_CITY_ORDER.length + 1;
-    for (let index = 0; index < SCENE_CITY_ORDER.length; index += 1) {
-      if (SCENE_CITY_ORDER[index].aliases.some(alias => text.includes(alias))) return index + 1;
-    }
-    if (text === "省级" || text === "浙江省级" || text.startsWith("浙江省") || text.includes("全省")) return 0;
+    const text = String(value || "");
+    if (text === "浙江省") return 0;
+    const idx = SCENE_CITY_ORDER.findIndex(c => c.name === text);
+    if (idx >= 0) return idx + 1;
     return SCENE_CITY_ORDER.length + 1;
   };
 
@@ -223,9 +245,18 @@
             return Array.isArray(v) ? v : [v];
           }).filter(Boolean))]
           : field.options || [];
+        const filteredOptions = (field.excludeFromOptions && field.excludeFromOptions.length)
+          ? options.filter(o => !field.excludeFromOptions.includes(o))
+          : options;
+        const sortOptions = field.options === "auto"
+          ? [...filteredOptions].sort((a, b) => {
+              if (typeof field.compareValues === "function") return field.compareValues(a, b);
+              return 0;
+            })
+          : filteredOptions;
         return `<select id="${field.id}" aria-label="筛选${field.label}">
           <option value="">全部${field.label}</option>
-          ${options.map(opt => `<option value="${esc(opt)}">${esc(opt)}</option>`).join("")}
+          ${sortOptions.map(opt => `<option value="${esc(opt)}">${esc(opt)}</option>`).join("")}
         </select>`;
       }).join("");
       html += `<input id="listSearch" placeholder="搜索${esc(cfg.listTitle)}" aria-label="搜索">`;
