@@ -263,7 +263,7 @@
       }
 
       const actionColumn = section === "projects"
-        ? { key: "__dispatch", label: "调度", width: "100px" }
+        ? { key: "__dispatch", label: "项目进展", width: "100px" }
         : null;
       const displayColumns = actionColumn ? [...cfg.columns, actionColumn] : cfg.columns;
       const colWidths = displayColumns.map(c => c.width).join(" ");
@@ -301,7 +301,7 @@
             return `<div class="${cls}">${label}${pdfBadge}</div>`;
           }).join("");
           const actionCell = section === "projects"
-            ? `<div class="row-action"><button type="button" class="row-action-btn" data-project-dispatch="${esc(item.序号)}" aria-label="调度此项目">调度</button></div>`
+            ? `<div class="row-action"><button type="button" class="row-action-btn" data-project-dispatch="${esc(item.序号)}" aria-label="查看此项目进展">项目进展</button></div>`
             : "";
           const detailHref = section === "policies" && item.id != null
             ? `policy-detail.html?id=${encodeURIComponent(item.id)}`
