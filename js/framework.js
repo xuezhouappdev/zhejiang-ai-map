@@ -31,6 +31,18 @@
     return out;
   })();
 
+  // 从 scenes.js 按 category.main 统计典型应用场景（与 scene.html 场景领域筛选同序）
+  const SCENE_MAIN_ORDER = ["产业升级", "民生服务", "社会治理", "科技创新", "跨界融合", "国际合作", "其他"];
+  const scenesByMain = (() => {
+    const scenes = window.SCENES_DATA?.items || [];
+    const counts = {};
+    scenes.forEach(s => {
+      const main = s.category?.main;
+      if (main) counts[main] = (counts[main] || 0) + 1;
+    });
+    return SCENE_MAIN_ORDER.filter(k => counts[k]).map(k => [k, counts[k]]);
+  })();
+
   // 从 tasks.js 取真实任务数据，统一剥掉 group 末尾句号（中英文 / 全半角）
   const cleanGroup = g => String(g || "").replace(/[。.．,，]+$/, "").trim();
   const taskGroupsByDim = (() => {
@@ -144,8 +156,13 @@
           if (label === "目标体系") {
             return `<div class="overview-cell objective-cell">${objectiveMarkup(dim)}</div>`;
           }
+          // 应用场景行：典型场景均属"应用"维度，按 category.main 分类计数，其余维度留 —
           if (label === "应用场景") {
-            return '<div class="overview-cell">-</div>';
+            if (dim !== "应用") return '<div class="overview-cell"><span class="overview-empty">—</span></div>';
+            const content = scenesByMain.length
+              ? `<ul class="overview-task-list">${scenesByMain.map(([k, v]) => `<li>${esc(k)} ${v}项</li>`).join("")}</ul>`
+              : '<span class="overview-empty">暂无应用场景数据</span>';
+            return `<div class="overview-cell">${content}</div>`;
           }
           if (label === "责任主体") {
             const text = data.leadership?.[dim] || "";
