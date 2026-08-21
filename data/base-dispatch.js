@@ -14,6 +14,9 @@ window.BASE_DISPATCH_DATA = {
           "name": "算力服务能力",
           "baseline": "728P已部署，平台可纳管30EFLOPS",
           "target": "算力规模1620P，其中自建228P",
+          "currentValue": 728,
+          "targetValue": 1620,
+          "unit": "P",
           "currentDisplay": "728P",
           "targetDisplay": "1620P",
           "progress": 45
@@ -22,6 +25,9 @@ window.BASE_DISPATCH_DATA = {
           "name": "数据服务能力",
           "baseline": "22个高质量数据集、15个语料库、51个可交易数据产品",
           "target": "高质量数据集和语料库40个",
+          "currentValue": 37,
+          "targetValue": 40,
+          "unit": "个",
           "currentDisplay": "37个",
           "targetDisplay": "40个",
           "progress": 93
@@ -30,6 +36,9 @@ window.BASE_DISPATCH_DATA = {
           "name": "模型服务能力",
           "baseline": "完成20个行业模型开发，形成“安诊儿”医疗大模型和智能体",
           "target": "垂直模型和智能体40个",
+          "currentValue": 20,
+          "targetValue": 40,
+          "unit": "个",
           "currentDisplay": "20个",
           "targetDisplay": "40个",
           "progress": 50
@@ -46,6 +55,9 @@ window.BASE_DISPATCH_DATA = {
           "name": "行业资源与标准",
           "baseline": "产业园已入驻企业104家，已成立医学人工智能测评验证联合实验室",
           "target": "生态主体超200家，标准30项",
+          "currentValue": 104,
+          "targetValue": 200,
+          "unit": "家",
           "currentDisplay": "104家",
           "targetDisplay": "200家以上",
           "progress": 52
@@ -70,6 +82,9 @@ window.BASE_DISPATCH_DATA = {
           "name": "数据服务能力",
           "baseline": "1个高质量语料库，规模1TB",
           "target": "行业高质量语料库30个",
+          "currentValue": 1,
+          "targetValue": 30,
+          "unit": "个",
           "currentDisplay": "1个",
           "targetDisplay": "30个",
           "progress": 3
@@ -166,6 +181,9 @@ window.BASE_DISPATCH_DATA = {
           "name": "数据服务能力",
           "baseline": "1个开源数据集、1万小时数据、700TB资源",
           "target": "对外开放18万小时高质量数据集",
+          "currentValue": 1,
+          "targetValue": 18,
+          "unit": "万小时",
           "currentDisplay": "1万小时",
           "targetDisplay": "18万小时",
           "progress": 6
@@ -182,6 +200,9 @@ window.BASE_DISPATCH_DATA = {
           "name": "应用验证能力",
           "baseline": "已完成15个训练场景搭建",
           "target": "万台以上机器人测试和100个场景验证",
+          "currentValue": 15,
+          "targetValue": 100,
+          "unit": "个场景",
           "currentDisplay": "15个场景",
           "targetDisplay": "100个场景",
           "progress": 15
@@ -206,14 +227,20 @@ window.BASE_DISPATCH_DATA = {
           "name": "算力服务能力",
           "baseline": "5P已部署，启动60P自建及租赁",
           "target": "到2028年自建160P国产化算力",
+          "currentValue": 5,
+          "targetValue": 160,
+          "unit": "P",
           "currentDisplay": "5P已部署、60P启动",
           "targetDisplay": "160P",
-          "progress": 20
+          "progress": 3
         },
         {
           "name": "数据服务能力",
           "baseline": "完成1个语料库，在建4个，预计50TB",
           "target": "建设20个高质量语料库",
+          "currentValue": 5,
+          "targetValue": 20,
+          "unit": "个",
           "currentDisplay": "1个完成、4个在建",
           "targetDisplay": "20个",
           "progress": 25
@@ -222,14 +249,20 @@ window.BASE_DISPATCH_DATA = {
           "name": "模型服务能力",
           "baseline": "适配3个基础大模型，完成1个垂类模型，正在开发5个",
           "target": "形成14个垂类大模型",
+          "currentValue": 6,
+          "targetValue": 14,
+          "unit": "个",
           "currentDisplay": "1个完成、5个在研",
           "targetDisplay": "14个",
-          "progress": 29
+          "progress": 43
         },
         {
           "name": "应用验证能力",
           "baseline": "在建8个文化旅游场景应用",
           "target": "完成4类33个典型场景示范应用",
+          "currentValue": 8,
+          "targetValue": 33,
+          "unit": "个",
           "currentDisplay": "8个在建",
           "targetDisplay": "33个",
           "progress": 24

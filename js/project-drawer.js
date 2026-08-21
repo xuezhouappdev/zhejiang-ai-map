@@ -364,16 +364,16 @@
       : 0;
     let html = '<section class="pd-section pd-base-overview-section">';
     html += '<div class="pd-base-section-head"><div><span class="pd-base-kicker">目标测算</span><h3>年度计划与三年行动进度</h3></div>';
-    html += '<span class="pd-base-source">综合完成度约 ' + averageProgress + '%</span></div>';
+    html += '<span class="pd-base-source">综合完成度约 <b data-base-overall-progress>' + averageProgress + '%</b></span></div>';
     html += '<div class="pd-base-overview-cards">';
     html += '<article class="pd-base-overview-card pd-base-card-annual"><span>2026年度计划投资</span><strong>' + esc(fmtYi(project["2026年计划投资"])) + '</strong><small>项目年度投资计划</small></article>';
-    html += '<article class="pd-base-overview-card pd-base-card-action pd-base-card-action-wide"><span>三年行动综合进度</span><strong>' + averageProgress + '%</strong><div class="pd-base-progress-track"><i style="width:' + averageProgress + '%"></i></div><small>按各项目标当前值与目标值测算</small></article>';
+    html += '<article class="pd-base-overview-card pd-base-card-action pd-base-card-action-wide"><span>三年行动综合进度</span><strong data-base-overall-value>' + averageProgress + '%</strong><div class="pd-base-progress-track"><i data-base-overall-fill style="width:' + averageProgress + '%"></i></div><small>按各项目标当前值与目标值测算</small></article>';
     html += '</div><div class="pd-base-metric-grid">';
     highlights.forEach(metric => {
       const progress = Math.max(0, Math.min(100, Number(metric.progress || 0)));
-      html += '<article class="pd-base-metric-card"><div class="pd-base-metric-title"><b>' + esc(metric.name) + '</b><span>' + progress + '%</span></div>';
-      html += '<div class="pd-base-progress-track"><i style="width:' + progress + '%"></i></div>';
-      html += '<div class="pd-base-metric-values"><span>' + esc(metric.currentDisplay || "当前值待补充") + '</span><span>目标 ' + esc(metric.targetDisplay || "待补充") + '</span></div></article>';
+      html += '<article class="pd-base-metric-card" data-base-metric-card="' + esc(metric.name) + '"><div class="pd-base-metric-title"><b>' + esc(metric.name) + '</b><span data-base-metric-progress>' + progress + '%</span></div>';
+      html += '<div class="pd-base-progress-track"><i data-base-metric-fill style="width:' + progress + '%"></i></div>';
+      html += '<div class="pd-base-metric-values"><span data-base-metric-current>' + esc(metric.currentDisplay || "当前值待补充") + '</span><span>目标 ' + esc(metric.targetDisplay || "待补充") + '</span></div></article>';
     });
     html += '</div></section>';
     return html;
@@ -382,6 +382,7 @@
   const renderBaseTaskCard = (task, project, base, record, index) => {
     const saved = (record.tasks || []).find(item => item.name === task) || {};
     const metric = baseMetric(base, task);
+    const metricValue = saved.metricValue != null ? saved.metricValue : "";
     const defaultPlan = task === "国债资金完成率／支付率" && project["2026年计划投资"]
       ? "年度投资计划：" + fmtYi(project["2026年计划投资"]) + "。"
       : "";
@@ -392,13 +393,16 @@
     html += '<div class="pd-base-task-content">';
     if (metric) {
       const progress = Math.max(0, Math.min(100, Number(metric.progress || 0)));
-      html += '<div class="pd-base-target-meter"><div class="pd-base-target-meter-head"><span>目标测算进度</span><b>' + progress + '%</b></div>';
-      html += '<div class="pd-base-progress-track"><i style="width:' + progress + '%"></i></div>';
-      html += '<div class="pd-base-metric-values"><span>' + esc(metric.currentDisplay || "当前值待补充") + '</span><span>目标 ' + esc(metric.targetDisplay || "待补充") + '</span></div></div>';
+      html += '<div class="pd-base-target-meter" data-base-task-meter><div class="pd-base-target-meter-head"><span>目标测算进度</span><b data-base-task-progress>' + progress + '%</b></div>';
+      html += '<div class="pd-base-progress-track"><i data-base-task-fill style="width:' + progress + '%"></i></div>';
+      html += '<div class="pd-base-metric-values"><span data-base-task-current>' + esc(metric.currentDisplay || "当前值待补充") + '</span><span>目标 ' + esc(metric.targetDisplay || "待补充") + '</span></div></div>';
     } else {
       html += '<div class="pd-base-target-meter pd-base-target-pending"><div class="pd-base-target-meter-head"><span>目标测算进度</span><b>待补录</b></div><p>' + esc(baseData.annualPlanHint || "请依据正式任务书填写") + '</p></div>';
     }
     html += '<div class="pd-base-field-grid">';
+    if (metric && metric.targetValue != null) {
+      html += '<label class="pd-base-measure-field">当前测算值（' + esc(metric.unit || "项") + '）<input type="number" min="0" step="any" data-base-field="metricValue" value="' + esc(metricValue) + '" placeholder="填写当前值"><small>填写后将实时更新目标进度</small></label>';
+    }
     html += '<label>2026年度计划<textarea data-base-field="annualPlan" rows="3" placeholder="请填入国家批复的年度绩效目标和年度任务">' + esc(saved.annualPlan || defaultPlan) + '</textarea></label>';
     html += '<label>累计至本月推进情况<textarea data-base-field="cumulative" rows="3" placeholder="请填写截至本月的累计推进情况">' + esc(saved.cumulative || "") + '</textarea></label>';
     html += '<label>下月计划<textarea data-base-field="nextMonth" rows="3" placeholder="请填写下月重点工作安排">' + esc(saved.nextMonth || "") + '</textarea></label>';
@@ -524,6 +528,7 @@
           + '<section class="pd-section"><h3>历史调度记录</h3>' + renderBaseHistory(records) + '</section>'
           + renderBaseWorkspace(project, records);
         body.scrollTop = 0;
+        refreshBaseProgress(body.querySelector("#pdBaseForm"));
       }
       const baseDrawer = document.getElementById("projectDrawer");
       const baseBackdrop = document.getElementById("pdBackdrop");
@@ -558,6 +563,68 @@
     document.body.style.overflow = "";
   };
 
+  const parseFirstNumber = value => {
+    const match = String(value || "").replace(/,/g, "").match(/-?\d+(?:\.\d+)?/);
+    return match ? Number(match[0]) : null;
+  };
+
+  const formatMetricValue = (metric, value) => {
+    if (value == null || !Number.isFinite(Number(value))) return metric.currentDisplay || "当前值待补充";
+    const number = Number(value);
+    const display = Number.isInteger(number) ? String(number) : number.toFixed(2);
+    return display + (metric.unit || "");
+  };
+
+  const refreshBaseProgress = form => {
+    const id = document.getElementById("projectDrawer")?.dataset?.projectId;
+    const base = baseData.bases[String(id)] || {};
+    const progressValues = [];
+    [...form.querySelectorAll("[data-base-task]")].forEach(card => {
+      const task = card.dataset.baseTask || "";
+      const metric = baseMetric(base, task);
+      if (!metric) return;
+      let currentValue = metric.currentValue;
+      const metricInput = card.querySelector('[data-base-field="metricValue"]');
+      const cumulativeText = card.querySelector('[data-base-field="cumulative"]')?.value || "";
+      if (metricInput && String(metricInput.value).trim() !== "") {
+        currentValue = Number(metricInput.value);
+      } else {
+        const textValue = parseFirstNumber(cumulativeText);
+        if (textValue != null) currentValue = textValue;
+      }
+      let progress = Number(metric.progress || 0);
+      if (metric.targetValue != null && Number.isFinite(Number(currentValue)) && Number(metric.targetValue) > 0) {
+        progress = Math.max(0, Math.min(100, Number(currentValue) / Number(metric.targetValue) * 100));
+      }
+      progress = Math.round(progress);
+      progressValues.push(progress);
+      const taskProgress = card.querySelector("[data-base-task-progress]");
+      const taskFill = card.querySelector("[data-base-task-fill]");
+      const taskCurrent = card.querySelector("[data-base-task-current]");
+      if (taskProgress) taskProgress.textContent = progress + "%";
+      if (taskFill) taskFill.style.width = progress + "%";
+      if (taskCurrent) taskCurrent.textContent = formatMetricValue(metric, currentValue);
+      const overviewCard = [...document.querySelectorAll("[data-base-metric-card]")].find(item => item.dataset.baseMetricCard === task);
+      if (overviewCard) {
+        const overviewProgress = overviewCard.querySelector("[data-base-metric-progress]");
+        const overviewFill = overviewCard.querySelector("[data-base-metric-fill]");
+        const overviewCurrent = overviewCard.querySelector("[data-base-metric-current]");
+        if (overviewProgress) overviewProgress.textContent = progress + "%";
+        if (overviewFill) overviewFill.style.width = progress + "%";
+        if (overviewCurrent) overviewCurrent.textContent = formatMetricValue(metric, currentValue);
+      }
+    });
+    if (progressValues.length) {
+      const average = Math.round(progressValues.reduce((sum, value) => sum + value, 0) / progressValues.length);
+      const overallProgress = document.querySelector("[data-base-overall-progress]");
+      const overallValue = document.querySelector("[data-base-overall-value]");
+      const overallFill = document.querySelector("[data-base-overall-fill]");
+      if (overallProgress) overallProgress.textContent = average + "%";
+      if (overallValue) overallValue.textContent = average + "%";
+      if (overallFill) overallFill.style.width = average + "%";
+    }
+  };
+
   const toggleBaseNeedFields = row => {
     const type = row.querySelector('[data-base-need-type]')?.value || "能力";
     const abilityFields = row.querySelector('[data-base-ability-fields]');
@@ -588,13 +655,18 @@
       alert("请填写调度月份");
       return;
     }
-    const tasks = [...form.querySelectorAll("[data-base-task]")].map(card => ({
-      name: card.dataset.baseTask || "",
-      annualPlan: String(card.querySelector('[data-base-field="annualPlan"]')?.value || "").trim(),
-      cumulative: String(card.querySelector('[data-base-field="cumulative"]')?.value || "").trim(),
-      nextMonth: String(card.querySelector('[data-base-field="nextMonth"]')?.value || "").trim(),
-      issues: String(card.querySelector('[data-base-field="issues"]')?.value || "").trim(),
-    }));
+    const tasks = [...form.querySelectorAll("[data-base-task]")].map(card => {
+      const metricInput = card.querySelector('[data-base-field="metricValue"]')?.value || "";
+      const cumulative = String(card.querySelector('[data-base-field="cumulative"]')?.value || "").trim();
+      return {
+        name: card.dataset.baseTask || "",
+        metricValue: metricInput ? Number(metricInput) : parseFirstNumber(cumulative),
+        annualPlan: String(card.querySelector('[data-base-field="annualPlan"]')?.value || "").trim(),
+        cumulative,
+        nextMonth: String(card.querySelector('[data-base-field="nextMonth"]')?.value || "").trim(),
+        issues: String(card.querySelector('[data-base-field="issues"]')?.value || "").trim(),
+      };
+    });
     const record = {
       kind: "base",
       month,
@@ -733,6 +805,12 @@
     body?.addEventListener("change", e => {
       const typeSelect = e.target.closest("[data-base-need-type]");
       if (typeSelect) toggleBaseNeedFields(typeSelect.closest("[data-base-need-row]"));
+      const baseForm = e.target.closest("#pdBaseForm");
+      if (baseForm) refreshBaseProgress(baseForm);
+    });
+    body?.addEventListener("input", e => {
+      const baseForm = e.target.closest("#pdBaseForm");
+      if (baseForm) refreshBaseProgress(baseForm);
     });
     body?.addEventListener("submit", e => {
       if (e.target && e.target.id === "pdBaseForm") handleBaseSubmit(e, false);
