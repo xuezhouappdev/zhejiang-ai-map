@@ -130,7 +130,7 @@
         { key: "序号",      label: "序号",     width: "55px" },
         { key: "场景名称",   label: "场景名称",   width: "minmax(220px,1.8fr)" },
         { key: "场景领域",   label: "场景领域",   width: "minmax(180px,1.3fr)", getValue: item => item.category?.main || "" },
-        { key: "所在地点",   label: "地点",     width: "minmax(75px,.6fr)", sortType: "scene-location", sortable: true, getValue: normalizeSceneLocation },
+        { key: "地市",       label: "地点",     width: "minmax(75px,.6fr)", sortType: "scene-location", sortable: true },
         { key: "业主单位",   label: "业主单位",   width: "minmax(160px,1.1fr)" },
         { key: "主管部门",   label: "主管部门",   width: "minmax(150px,1fr)" },
       ],
@@ -140,39 +140,25 @@
             const order = ["产业升级","民生服务","社会治理","科技创新","跨界融合","国际合作","其他"];
             return order.indexOf(a) - order.indexOf(b);
           } },
-        { id: "listLocationFilter", key: "所在地点", label: "地点", options: "auto", getValue: normalizeSceneLocation, excludeFromOptions: ["未识别"],
+        { id: "listLocationFilter", key: "地市", label: "地点", options: "auto", excludeFromOptions: ["未识别"],
           compareValues: (a, b) => sceneLocationRank(a) - sceneLocationRank(b) },
       ],
-      defaultSort: { key: "所在地点", direction: 1 },
+      defaultSort: { key: "地市", direction: 1 },
       renumber: true,
       searchFields: ["场景名称", "业主单位", "所在地点", "主管部门", "场景说明"],
     },
   };
 
   /**
-   * 规范化场景地点："浙江省" / 11 个地级市 / "待补充" / "未识别"。
-   * @param {string} raw
-   * @returns {string}
-   */
-  function normalizeSceneLocation(raw) {
-    const text = String(raw || "").replace(/\s+/g, "");
-    if (!text) return "待补充";
-    if (text === "省级" || text === "浙江省级" || /^浙江省(?!.*?(杭州|宁波|温州|嘉兴|湖州|绍兴|金华|衢州|舟山|台州|丽水))/.test(text) || text.includes("全省")) return "浙江省";
-    for (const city of SCENE_CITY_ORDER) {
-      if (city.aliases.some(alias => text.includes(alias))) return city.name;
-    }
-    if (text === "开发区") return "金华市";
-    return "未识别";
-  }
-
-  /**
-   * 场景地点排序：浙江省→11 地级市按 SCENE_CITY_ORDER→未识别。
-   * @param {string} value  应为 normalizeSceneLocation 的返回值
+   * 场景地点排序：省级→11 地级市按 SCENE_CITY_ORDER→待补充→未识别。
+   * 数据侧已为每条场景写入标准化的「地市」字段（省级/11 地市名），
+   * 前端不再运行时猜测，直接读取。
+   * @param {string} value  item["地市"]
    * @returns {number}
    */
   function sceneLocationRank(value) {
     const text = String(value || "");
-    if (text === "浙江省") return 0;
+    if (text === "省级") return 0;
     const idx = SCENE_CITY_ORDER.findIndex(c => c.name === text);
     if (idx >= 0) return idx + 1;
     if (text === "待补充") return SCENE_CITY_ORDER.length + 1;
