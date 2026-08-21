@@ -262,18 +262,24 @@
         if (column) filtered.sort((a, b) => compareItems(a, b, column));
       }
 
-      const colWidths = cfg.columns.map(c => c.width).join(" ");
+      const actionColumn = section === "projects"
+        ? { key: "__dispatch", label: "调度", width: "100px" }
+        : null;
+      const displayColumns = actionColumn ? [...cfg.columns, actionColumn] : cfg.columns;
+      const colWidths = displayColumns.map(c => c.width).join(" ");
 
       // 同时在 .list-body 和表头行上设置 grid 列宽（两处都设保证兼容）
       if (bodyEl) bodyEl.style.setProperty("--task-grid-columns", colWidths);
       if (headEl) {
         headEl.style.gridTemplateColumns = colWidths;
-        headEl.innerHTML = cfg.columns.map(c => {
+        headEl.innerHTML = displayColumns.map(c => {
           const sortable = c.sortable;
           const indicator = sortState.key === c.key ? (sortState.direction === 1 ? "▲" : "▼") : "↕";
-          const attrs = sortable
-            ? ` class="list-sortable" data-sort-key="${esc(c.key)}" role="button" tabindex="0" aria-label="按${esc(c.label)}排序"`
-            : "";
+          const attrs = c.key === "__dispatch"
+            ? ` class="list-head-action"`
+            : sortable
+              ? ` class="list-sortable" data-sort-key="${esc(c.key)}" role="button" tabindex="0" aria-label="按${esc(c.label)}排序"`
+              : "";
           return `<div${attrs}>${c.label.replace(/\n/g, "<br>")}${sortable ? `<span class="sort-indicator">${indicator}</span>` : ""}</div>`;
         }).join("");
       }
@@ -304,7 +310,7 @@
             ? ` data-detail-href="${detailHref}" tabindex="0" role="link" aria-label="查看${esc(item.name || "详情")}"`
             : "";
           return `<article class="list-row"${attrs}>
-            <div class="list-summary">${cells}</div>
+            <div class="list-summary">${cells}${actionCell}</div>
           </article>`;
         }).join("")
         : '<div class="list-empty">没有符合条件的记录</div>';
