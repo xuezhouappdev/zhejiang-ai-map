@@ -16,6 +16,7 @@
   const { esc, valueAsText, pad2 } = window.RenderUtils;
   const data = window.PROJECTS_DATA || { projects: [] };
   const allProjects = data.projects || [];
+  const baseData = window.BASE_DISPATCH_DATA || { bases: {}, annualPlanHint: "" };
 
   const STORAGE_KEY = "projectDispatchStore";
 
@@ -57,6 +58,24 @@
     "竣工验收",
     "投产",
   ];
+
+  const BASE_TASK_GROUPS = [
+    {
+      name: "一、项目建设",
+      tasks: [
+        "算力服务能力",
+        "模型服务能力",
+        "数据服务能力",
+        "应用验证能力",
+        "汇聚行业优势资源",
+        "构建行业标准和评测体系",
+      ],
+    },
+    { name: "二、个性化指标", tasks: ["预期成效"] },
+    { name: "三、投资完成", tasks: ["国债资金完成率／支付率"] },
+  ];
+
+  const BASE_NEED_TYPES = ["数据", "算力", "模型", "场景", "技术人才", "其他"];
 
   const isPilotBase = project => project && project.领域 === "中试基地";
 
@@ -332,6 +351,80 @@
       </form>`;
   };
 
+  const baseCurrentRecord = (records, month) =>
+    records.find(r => r.month === month && r.kind === "base") || {};
+
+  const baseMetric = (base, task) =>
+    (base.highlights || []).find(item => item.name === task) || null;
+
+  const renderBaseOverview = (project, base) => {
+    let html = '<section class="pd-section pd-base-overview-section">';
+    html += '<div class="pd-base-section-head"><div><span class="pd-base-kicker">已有情况与目标</span><h3>基地基线、年度计划、三年行动目标</h3></div>';
+    html += '<span class="pd-base-source">' + esc(baseData.asOf || "资料基线") + '</span></div>';
+    html += '<div class="pd-base-overview-cards">';
+    html += '<article class="pd-base-overview-card pd-base-card-current"><span>已有基线</span><p>' + esc(base.baselineSummary || "暂无已有情况资料") + '</p><small>来源：' + esc(baseData.source || "基地资料") + '</small></article>';
+    html += '<article class="pd-base-overview-card pd-base-card-annual"><span>2026年度计划</span><strong>' + esc(fmtYi(project["2026年计划投资"])) + '</strong><p>' + esc(baseData.annualPlanHint || "以国家批复绩效目标和年度任务书为准") + '</p></article>';
+    html += '<article class="pd-base-overview-card pd-base-card-action"><span>三年行动目标</span><p>' + esc(base.actionTarget || "暂无三年行动目标资料") + '</p><small>用于填报时对照当前阶段进度</small></article>';
+    html += '</div><div class="pd-base-metric-grid">';
+    (base.highlights || []).forEach(metric => {
+      html += '<article class="pd-base-metric-card"><div class="pd-base-metric-title"><b>' + esc(metric.name) + '</b><span>推进中</span></div>';
+      html += '<p><em>已有</em>' + esc(metric.baseline) + '</p><p><em>目标</em>' + esc(metric.target) + '</p></article>';
+    });
+    html += '</div></section>';
+    return html;
+  };
+
+  const renderBaseTaskCard = (task, project, base, record, index) => {
+    const saved = (record.tasks || []).find(item => item.name === task) || {};
+    const metric = baseMetric(base, task);
+    const defaultPlan = task === "国债资金完成率／支付率" && project["2026年计划投资"]
+      ? "年度投资计划：" + fmtYi(project["2026年计划投资"]) + "。"
+      : "";
+    const filled = Boolean(saved.cumulative || saved.nextMonth || saved.issues);
+    let html = '<details class="pd-base-task-card" data-base-task="' + esc(task) + '"' + (index === 0 ? " open" : "") + '>';
+    html += '<summary><span class="pd-base-task-summary-title"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i>' + esc(task) + '</span>';
+    html += '<span class="pd-base-task-status ' + (filled ? "is-filled" : "") + '">' + (filled ? "已填报" : "待填报") + '</span></summary>';
+    html += '<div class="pd-base-task-content">';
+    if (metric) {
+      html += '<div class="pd-base-reference"><span>已有情况</span><p>' + esc(metric.baseline) + '</p><span>三年行动目标</span><p>' + esc(metric.target) + '</p></div>';
+    } else {
+      html += '<div class="pd-base-reference"><span>填报提示</span><p>' + esc(baseData.annualPlanHint || "请依据正式任务书填写") + '</p></div>';
+    }
+    html += '<div class="pd-base-field-grid">';
+    html += '<label>2026年度计划<textarea data-base-field="annualPlan" rows="3" placeholder="请填入国家批复的年度绩效目标和年度任务">' + esc(saved.annualPlan || defaultPlan) + '</textarea></label>';
+    html += '<label>累计至本月推进情况<textarea data-base-field="cumulative" rows="3" placeholder="请填写截至本月的累计推进情况">' + esc(saved.cumulative || "") + '</textarea></label>';
+    html += '<label>下月计划<textarea data-base-field="nextMonth" rows="3" placeholder="请填写下月重点工作安排">' + esc(saved.nextMonth || "") + '</textarea></label>';
+    html += '<label class="pd-base-issue-field">存在问题及协调事项<textarea data-base-field="issues" rows="3" placeholder="如无问题请填写“无”">' + esc(saved.issues || "") + '</textarea></label>';
+    html += '</div></div></details>';
+    return html;
+  };
+
+  const renderBaseNeedRow = (item = {}, index = 0) => {
+    const type = item.type === "需求" ? "需求" : "能力";
+    const resources = Array.isArray(item.resourceTypes) ? item.resourceTypes : [];
+    const shareType = item.shareType || "";
+    const connectStatus = item.connectStatus || "待对接";
+    let html = '<article class="pd-base-need-row" data-base-need-row>';
+    html += '<div class="pd-base-need-row-head"><span>记录 ' + (index + 1) + '</span><button type="button" class="pd-base-icon-btn" data-base-remove-need aria-label="删除记录">删除</button></div>';
+    html += '<div class="pd-base-need-grid">';
+    html += '<label>类别<select name="needType" data-base-need-type><option value="能力" ' + (type === "能力" ? "selected" : "") + '>能力</option><option value="需求" ' + (type === "需求" ? "selected" : "") + '>需求</option></select></label>';
+    html += '<label class="pd-base-need-name">能力／需求名称<input type="text" name="needName" value="' + esc(item.name || "") + '" placeholder="请输入能力或需求名称"></label>';
+    html += '<div class="pd-base-need-condition" data-base-ability-fields ' + (type === "需求" ? "hidden" : "") + '><span>共享条件／合作方式</span><div class="pd-base-choice-row">';
+    ["免费开放", "商业化合作", "其他"].forEach(option => {
+      html += '<label class="pd-base-choice"><input type="radio" name="shareType" value="' + esc(option) + '" ' + (shareType === option ? "checked" : "") + '>' + esc(option) + '</label>';
+    });
+    html += '</div></div>';
+    html += '<div class="pd-base-need-condition" data-base-demand-fields ' + (type === "能力" ? "hidden" : "") + '><span>需求类型</span><div class="pd-base-choice-row">';
+    BASE_NEED_TYPES.forEach(option => {
+      html += '<label class="pd-base-choice"><input type="checkbox" name="needResource" value="' + esc(option) + '" ' + (resources.includes(option) ? "checked" : "") + '>' + esc(option) + '</label>';
+    });
+    html += '</div></div>';
+    html += '<label>对接状态<select name="connectStatus"><option value="待对接" ' + (connectStatus === "待对接" ? "selected" : "") + '>待对接</option><option value="已对接" ' + (connectStatus === "已对接" ? "selected" : "") + '>已对接</option></select></label>';
+    html += '<label class="pd-base-need-note">对接情况<textarea name="connectNote" rows="3" placeholder="填写适合领域、可能供方、对接单位和进展">' + esc(item.connectNote || "") + '</textarea></label>';
+    html += '</div></article>';
+    return html;
+  };
+
   /**
    * 中试基地项目占位卡片。
    * @param {Object} project
@@ -349,6 +442,54 @@
       <p>功能将在 Phase 2 上线。届时附表 1/2 字段、Word 导出将与基地每月调度表格保持一致。</p>
       <p class="pd-pilot-meta">项目：${esc(project.项目名称)}</p>
     </div>`;
+
+  const renderBaseHistory = records => {
+    if (!records.length) return '<div class="pd-empty">暂无基地月度调度记录</div>';
+    const rows = records.map(record => {
+      const tasks = Array.isArray(record.tasks) ? record.tasks : [];
+      const filled = tasks.filter(item => item.cumulative || item.nextMonth || item.issues).length;
+      const issues = tasks.filter(item => item.issues && item.issues !== "无").length;
+      const needs = Array.isArray(record.capabilityNeeds) ? record.capabilityNeeds.filter(item => item.name).length : 0;
+      return '<tr><td class="pd-month">' + esc(record.month) + '</td><td>' + (record.isDraft ? "草稿" : "已提交") + '</td><td class="pd-num">' + filled + ' / 8</td><td class="pd-num">' + needs + '</td><td class="pd-num ' + (issues ? "pd-issue" : "") + '">' + issues + '</td><td class="pd-time">' + esc(record.updatedAt || "—") + '</td></tr>';
+    }).join("");
+    return '<table class="pd-history pd-base-history"><thead><tr><th>月份</th><th>状态</th><th>附表1已填</th><th>附表2记录</th><th>协调事项</th><th>更新时间</th></tr></thead><tbody>' + rows + '</tbody></table>';
+  };
+
+  const renderBaseWorkspace = (project, records) => {
+    const base = baseData.bases[String(project.序号)] || {};
+    const now = new Date();
+    const defaultMonth = now.getFullYear() + "-" + pad2(now.getMonth() + 1);
+    const current = baseCurrentRecord(records, defaultMonth);
+    const defaultDate = defaultMonth + "-" + pad2(now.getDate());
+    const needRows = current.capabilityNeeds && current.capabilityNeeds.length ? current.capabilityNeeds : [{}];
+    let taskIndex = 0;
+    let html = renderBaseOverview(project, base);
+    html += '<section class="pd-section pd-base-form-section"><div class="pd-base-section-head"><div><span class="pd-base-kicker">月度填报</span><h3>附表1、附表2</h3></div><span class="pd-base-source">用户填写项完整保留</span></div>';
+    html += '<form class="pd-base-form" id="pdBaseForm">';
+    html += '<div class="pd-base-meta-grid">';
+    html += '<label>调度月份<input type="month" name="month" value="' + esc(current.month || defaultMonth) + '" required></label>';
+    html += '<label>填报时间<input type="date" name="fillDate" value="' + esc(current.fillDate || defaultDate) + '" required></label>';
+    html += '<label>填报单位（盖章）<input type="text" name="fillOrg" value="' + esc(current.fillOrg || project.项目业主 || "") + '" required></label>';
+    html += '<label>联系人<input type="text" name="contact" value="' + esc(current.contact || "") + '" placeholder="姓名"></label>';
+    html += '<label>联系电话<input type="tel" name="phone" value="' + esc(current.phone || "") + '" placeholder="手机或办公电话"></label>';
+    html += '</div>';
+    html += '<div class="pd-base-tabs" role="tablist"><button type="button" class="pd-base-tab is-active" data-base-tab="tasks" role="tab" aria-selected="true">任务完成情况（附表1）</button><button type="button" class="pd-base-tab" data-base-tab="needs" role="tab" aria-selected="false">能力与需求（附表2）</button></div>';
+    html += '<div class="pd-base-panel" data-base-panel="tasks">';
+    BASE_TASK_GROUPS.forEach(group => {
+      html += '<div class="pd-base-task-group"><h4>' + esc(group.name) + '</h4>';
+      group.tasks.forEach(task => {
+        html += renderBaseTaskCard(task, project, base, current, taskIndex);
+        taskIndex += 1;
+      });
+      html += '</div>';
+    });
+    html += '</div>';
+    html += '<div class="pd-base-panel" data-base-panel="needs" hidden><div class="pd-base-needs-intro"><div><span>动态清单</span><p>保留上月已有记录，只更新发生变化的能力和需求。能力类填写开放方式，需求类填写需求类型。</p></div><button type="button" class="pd-btn pd-btn-secondary" data-base-add-need>＋ 新增能力／需求</button></div>';
+    html += '<div id="pdBaseNeedsList">' + needRows.map((item, index) => renderBaseNeedRow(item, index)).join("") + '</div></div>';
+    html += '<div class="pd-base-actions"><button type="button" class="pd-btn pd-btn-ghost" data-pd-action="cancel">取消</button><button type="button" class="pd-btn pd-btn-secondary" id="pdBaseSaveDraft">保存草稿</button><button type="submit" class="pd-btn pd-btn-primary">提交本月调度</button></div>';
+    html += '</form></section>';
+    return html;
+  };
 
   /**
    * 打开抽屉并渲染。
@@ -369,6 +510,21 @@
     const body = document.getElementById("pdBody");
     const title = document.getElementById("pdTitle");
     if (title) title.textContent = `项目调度 · ${project.项目名称 || ""}`;
+    if (isPilotBase(project)) {
+      if (body) {
+        body.innerHTML = renderHeader(project, records)
+          + '<section class="pd-section"><h3>历史调度记录</h3>' + renderBaseHistory(records) + '</section>'
+          + renderBaseWorkspace(project, records);
+        body.scrollTop = 0;
+      }
+      const baseDrawer = document.getElementById("projectDrawer");
+      const baseBackdrop = document.getElementById("pdBackdrop");
+      baseDrawer?.classList.add("open");
+      baseBackdrop?.classList.add("open");
+      baseDrawer?.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+      return;
+    }
     if (body) {
       body.innerHTML = renderHeader(project, records)
         + `<section class="pd-section"><h3>历史调度记录</h3>${renderHistory(records)}</section>`
@@ -376,6 +532,7 @@
           ? `<section class="pd-section">${renderPilotBasePlaceholder(project)}</section>`
           : `<section class="pd-section"><h3>填报本月调度</h3>${renderForm(project, records)}</section>`);
     }
+    if (body) body.scrollTop = 0;
     const backdrop = document.getElementById("pdBackdrop");
     drawer?.classList.add("open");
     backdrop?.classList.add("open");
@@ -391,6 +548,64 @@
     backdrop?.classList.remove("open");
     drawer?.setAttribute("aria-hidden", "true");
     document.body.style.overflow = "";
+  };
+
+  const toggleBaseNeedFields = row => {
+    const type = row.querySelector('[data-base-need-type]')?.value || "能力";
+    const abilityFields = row.querySelector('[data-base-ability-fields]');
+    const demandFields = row.querySelector('[data-base-demand-fields]');
+    if (abilityFields) abilityFields.hidden = type === "需求";
+    if (demandFields) demandFields.hidden = type === "能力";
+  };
+
+  const readBaseNeedRows = form => [...form.querySelectorAll("[data-base-need-row]")].map(row => ({
+    type: row.querySelector('[name="needType"]')?.value || "能力",
+    name: String(row.querySelector('[name="needName"]')?.value || "").trim(),
+    shareType: row.querySelector('[name="shareType"]:checked')?.value || "",
+    resourceTypes: [...row.querySelectorAll('[name="needResource"]:checked')].map(input => input.value),
+    connectStatus: row.querySelector('[name="connectStatus"]')?.value || "待对接",
+    connectNote: String(row.querySelector('[name="connectNote"]')?.value || "").trim(),
+  }));
+
+  const handleBaseSubmit = (event, asDraft = false) => {
+    event.preventDefault();
+    const form = event.currentTarget && event.currentTarget.tagName === "FORM"
+      ? event.currentTarget
+      : document.getElementById("pdBaseForm");
+    const id = document.getElementById("projectDrawer")?.dataset?.projectId;
+    if (!form || !id) return;
+    const fd = new FormData(form);
+    const month = String(fd.get("month") || "").trim();
+    if (!month) {
+      alert("请填写调度月份");
+      return;
+    }
+    const tasks = [...form.querySelectorAll("[data-base-task]")].map(card => ({
+      name: card.dataset.baseTask || "",
+      annualPlan: String(card.querySelector('[data-base-field="annualPlan"]')?.value || "").trim(),
+      cumulative: String(card.querySelector('[data-base-field="cumulative"]')?.value || "").trim(),
+      nextMonth: String(card.querySelector('[data-base-field="nextMonth"]')?.value || "").trim(),
+      issues: String(card.querySelector('[data-base-field="issues"]')?.value || "").trim(),
+    }));
+    const record = {
+      kind: "base",
+      month,
+      fillDate: String(fd.get("fillDate") || ""),
+      fillOrg: String(fd.get("fillOrg") || "").trim(),
+      contact: String(fd.get("contact") || "").trim(),
+      phone: String(fd.get("phone") || "").trim(),
+      tasks,
+      capabilityNeeds: readBaseNeedRows(form).filter(item => item.name || item.connectNote),
+      isDraft: asDraft,
+      updatedAt: new Date().toLocaleString("zh-CN", { hour12: false }),
+    };
+    const list = (store.byProjectId[id] ??= []);
+    const oldIndex = list.findIndex(item => item.kind === "base" && item.month === month);
+    if (oldIndex >= 0) list.splice(oldIndex, 1);
+    list.unshift(record);
+    saveStore(store);
+    showToast(asDraft ? "草稿已保存" : "本月调度已提交");
+    open(id);
   };
 
   /**
@@ -470,6 +685,29 @@
     body?.addEventListener("click", e => {
       const cancelBtn = e.target.closest('[data-pd-action="cancel"]');
       if (cancelBtn) close();
+      const tabBtn = e.target.closest("[data-base-tab]");
+      if (tabBtn) {
+        const tab = tabBtn.dataset.baseTab;
+        body.querySelectorAll("[data-base-tab]").forEach(btn => {
+          const active = btn === tabBtn;
+          btn.classList.toggle("is-active", active);
+          btn.setAttribute("aria-selected", active ? "true" : "false");
+        });
+        body.querySelectorAll("[data-base-panel]").forEach(panel => {
+          panel.hidden = panel.dataset.basePanel !== tab;
+        });
+      }
+      const addNeedBtn = e.target.closest("[data-base-add-need]");
+      if (addNeedBtn) {
+        const list = document.getElementById("pdBaseNeedsList");
+        if (list) list.insertAdjacentHTML("beforeend", renderBaseNeedRow({}, list.querySelectorAll("[data-base-need-row]").length));
+      }
+      const removeNeedBtn = e.target.closest("[data-base-remove-need]");
+      if (removeNeedBtn) {
+        const rows = body.querySelectorAll("[data-base-need-row]");
+        const row = removeNeedBtn.closest("[data-base-need-row]");
+        if (row && rows.length > 1) row.remove();
+      }
       const draftBtn = e.target.closest("#pdSaveDraft");
       if (draftBtn) {
         const form = document.getElementById("pdForm");
@@ -478,8 +716,18 @@
           handleSubmit({ preventDefault: () => {}, currentTarget: form }, true);
         }
       }
+      const baseDraftBtn = e.target.closest("#pdBaseSaveDraft");
+      if (baseDraftBtn) {
+        const form = document.getElementById("pdBaseForm");
+        if (form) handleBaseSubmit({ preventDefault: () => {}, currentTarget: form }, true);
+      }
+    });
+    body?.addEventListener("change", e => {
+      const typeSelect = e.target.closest("[data-base-need-type]");
+      if (typeSelect) toggleBaseNeedFields(typeSelect.closest("[data-base-need-row]"));
     });
     body?.addEventListener("submit", e => {
+      if (e.target && e.target.id === "pdBaseForm") handleBaseSubmit(e, false);
       if (e.target && e.target.id === "pdForm") handleSubmit(e, false);
     });
 
