@@ -150,13 +150,13 @@
   };
 
   /**
-   * 规范化场景地点："浙江省" / 11 个地级市 / "未识别"。
+   * 规范化场景地点："浙江省" / 11 个地级市 / "待补充" / "未识别"。
    * @param {string} raw
    * @returns {string}
    */
   function normalizeSceneLocation(raw) {
     const text = String(raw || "").replace(/\s+/g, "");
-    if (!text) return "未识别";
+    if (!text) return "待补充";
     if (text === "省级" || text === "浙江省级" || /^浙江省(?!.*?(杭州|宁波|温州|嘉兴|湖州|绍兴|金华|衢州|舟山|台州|丽水))/.test(text) || text.includes("全省")) return "浙江省";
     for (const city of SCENE_CITY_ORDER) {
       if (city.aliases.some(alias => text.includes(alias))) return city.name;
@@ -175,7 +175,8 @@
     if (text === "浙江省") return 0;
     const idx = SCENE_CITY_ORDER.findIndex(c => c.name === text);
     if (idx >= 0) return idx + 1;
-    return SCENE_CITY_ORDER.length + 1;
+    if (text === "待补充") return SCENE_CITY_ORDER.length + 1;
+    return SCENE_CITY_ORDER.length + 2;
   }
 
   /**
