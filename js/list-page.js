@@ -294,6 +294,9 @@
               : "";
             return `<div class="${cls}">${label}${pdfBadge}</div>`;
           }).join("");
+          const actionCell = section === "projects"
+            ? `<div class="row-action"><button type="button" class="row-action-btn" data-project-dispatch="${esc(item.序号)}" aria-label="调度此项目">调度</button></div>`
+            : "";
           const detailHref = section === "policies" && item.id != null
             ? `policy-detail.html?id=${encodeURIComponent(item.id)}`
             : "";
