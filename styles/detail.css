@@ -13,7 +13,7 @@ body {
   min-height: 100vh;
   color: var(--detail-ink);
   background: #f8fafc;
-  font-family: "Noto Serif SC", "Songti SC", serif;
+  font-family: "方正兰亭黑", "Source Han Sans SC", "PingFang SC", sans-serif;
 }
 .page-header {
   position: sticky;
