@@ -161,14 +161,6 @@ select {
   letter-spacing: .03em;
 }
 
-.monitor-hero-copy > p {
-  max-width: 780px;
-  margin: 0;
-  color: #dbeafe;
-  font-size: 14px;
-  line-height: 1.8;
-}
-
 .monitor-meta {
   display: flex;
   flex-wrap: wrap;
