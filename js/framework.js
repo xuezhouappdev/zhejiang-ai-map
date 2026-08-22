@@ -64,6 +64,16 @@
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
+  const TICKER_SPEED_PX_PER_SECOND = 97;
+  const syncTickerSpeed = track => {
+    if (!track) return;
+    requestAnimationFrame(() => {
+      const loopWidth = track.scrollWidth / 2;
+      if (!loopWidth) return;
+      const duration = loopWidth / TICKER_SPEED_PX_PER_SECOND;
+      track.style.setProperty("--ticker-duration", `${duration.toFixed(2)}s`);
+    });
+  };
   const split = value =>
     String(value || "")
       .split("；")
@@ -202,8 +212,9 @@
   ticker.setAttribute("aria-label", "当日资讯");
   const today = new Date().toLocaleDateString("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit" });
   const newsItems = news.map(item => `<span class="overview-news-item"><b>${esc(item.title)}</b><span>${esc(item.summary)}</span></span>`).join('<span class="overview-news-sep">｜</span>');
-  ticker.innerHTML = `<div class="overview-news-label"><span>当日资讯</span><span class="overview-news-date">${esc(today)}</span></div><div class="overview-news-window"><div class="overview-news-track">${newsItems}<span class="overview-news-sep">｜</span>${newsItems}</div></div>`;
+  ticker.innerHTML = `<a class="overview-news-label" href="policies.html" aria-label="进入政策库"><span>当日资讯</span><span class="overview-news-date">${esc(today)}</span></a><div class="overview-news-window"><div class="overview-news-track">${newsItems}<span class="overview-news-sep">｜</span>${newsItems}</div></div>`;
   overview.insertAdjacentElement("afterend", ticker);
+  syncTickerSpeed(ticker.querySelector(".overview-news-track"));
 
   document.body.classList.add("overview-only");
   window.renderGuaranteePanel = renderGuaranteePanel;

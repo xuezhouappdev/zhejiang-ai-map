@@ -10,6 +10,22 @@
 
   const { esc } = window.RenderUtils;
   const { NEWS_DATA } = window.__constants;
+  const TICKER_SPEED_PX_PER_SECOND = 97;
+
+  /**
+   * 根据单份资讯内容宽度计算动画时长，确保不同页面的实际像素速度一致。
+   * @param {HTMLElement|null} track
+   * @returns {void}
+   */
+  const syncTickerSpeed = track => {
+    if (!track) return;
+    requestAnimationFrame(() => {
+      const loopWidth = track.scrollWidth / 2;
+      if (!loopWidth) return;
+      const duration = loopWidth / TICKER_SPEED_PX_PER_SECOND;
+      track.style.setProperty("--ticker-duration", `${duration.toFixed(2)}s`);
+    });
+  };
 
   /**
    * 初始化滚动条：日期 + 文本接龙。
@@ -35,6 +51,7 @@
         .join('<span class="ticker-sep">｜</span>');
       track.innerHTML = items + '<span class="ticker-sep">｜</span>' + items;
     }
+    syncTickerSpeed(track);
   };
 
   window.Ticker = { initTicker };

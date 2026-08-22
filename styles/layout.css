@@ -1355,8 +1355,17 @@ select {
   color: #fff;
   font-size: 13px;
   font-weight: 750;
+  text-decoration: none;
   white-space: nowrap;
-  height: 42px
+  height: 42px;
+  cursor: pointer;
+  transition: filter .18s ease
+}
+
+.ticker-label:hover,
+.ticker-label:focus-visible {
+  filter: brightness(1.08);
+  outline: none
 }
 
 .ticker-label::after {
@@ -1391,7 +1400,7 @@ select {
   align-items: center;
   width: max-content;
   min-width: max-content;
-  animation: ticker-scroll 42s linear infinite;
+  animation: ticker-scroll var(--ticker-duration, 42s) linear infinite;
   will-change: transform
 }
 

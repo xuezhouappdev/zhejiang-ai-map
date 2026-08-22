@@ -787,7 +787,15 @@ body {
   background: linear-gradient(110deg, #1e40af, #3b82f6);
   font-size: 13px;
   font-weight: 750;
+  text-decoration: none;
   white-space: nowrap;
+  cursor: pointer;
+  transition: filter .18s ease;
+}
+.overview-news-label:hover,
+.overview-news-label:focus-visible {
+  filter: brightness(1.08);
+  outline: none;
 }
 .overview-news-label::after {
   content: "";
@@ -818,7 +826,7 @@ body {
   align-items: center;
   width: max-content;
   min-width: max-content;
-  animation: overview-ticker-scroll 42s linear infinite;
+  animation: overview-ticker-scroll var(--ticker-duration, 83s) linear infinite;
   will-change: transform;
 }
 .overview-news-ticker:hover .overview-news-track {

@@ -96,7 +96,7 @@
     const { PAGE_ROUTES } = window.__constants;
 
     const rowHTML = rows.map(([label, key]) => {
-      const route = PAGE_ROUTES[label];
+      const route = label === "政策体系" ? undefined : PAGE_ROUTES[label];
       const cells = DIMS.map(dim => {
         const val = key === "目标体系"
           ? objectiveMarkup(dim)
