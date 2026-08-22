@@ -21,7 +21,6 @@
     detailTable: document.getElementById("detailTable"),
     currentSource: document.getElementById("currentSource"),
     coverageText: document.getElementById("coverageText"),
-    latestPeriodShort: document.getElementById("latestPeriodShort"),
   };
 
   const state = {
@@ -257,7 +256,6 @@
   const renderPeriodContext = () => {
     const period = currentPeriod();
     refs.currentSource.textContent = period.source;
-    refs.latestPeriodShort.textContent = shortMonthLabel(data.coverage.latest);
   };
 
   const renderPeriodViews = () => {

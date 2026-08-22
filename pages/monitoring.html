@@ -37,7 +37,7 @@
         <label for="monthSelect">当前监测期</label>
         <select id="monthSelect" aria-label="选择监测月份"></select>
         <div class="monitor-freshness">
-          <span>数据状态</span><strong><i></i>已完成勾稽校验</strong>
+          <span>汇总校验</span><strong title="省级合计与11个地市、4个领域的6项指标汇总一致"><i></i>省级与分项汇总一致</strong>
         </div>
         <div class="monitor-source-current">来源：<span id="currentSource">—</span></div>
       </div>
@@ -46,7 +46,7 @@
     <section class="kpi-grid" id="kpiGrid" aria-label="核心监测指标"></section>
 
     <section class="dashboard-grid">
-      <article class="dash-card span-8 trend-card">
+      <article class="dash-card span-12 trend-card">
         <header class="dash-card-head">
           <div>
             <span class="section-no">01</span>
@@ -62,31 +62,10 @@
         <div class="chart-host" id="trendChart" aria-live="polite"></div>
       </article>
 
-      <article class="dash-card span-4 mechanism-monitor-card">
-        <header class="dash-card-head">
-          <div>
-            <span class="section-no">02</span>
-            <h3>月度统计监测机制</h3>
-            <p>报送、校验、分析、反馈闭环</p>
-          </div>
-        </header>
-        <ol class="monitor-cycle">
-          <li><span>1</span><div><b>月度报送</b><small>地市和产业领域数据归集</small></div></li>
-          <li><span>2</span><div><b>口径校验</b><small>省级、地市、领域三方勾稽</small></div></li>
-          <li><span>3</span><div><b>监测分析</b><small>规模、增长、结构和风险识别</small></div></li>
-          <li><span>4</span><div><b>通报反馈</b><small>形成月度态势和重点关注清单</small></div></li>
-        </ol>
-        <div class="quality-strip">
-          <span><b>6</b>项指标</span>
-          <span><b>100%</b>勾稽一致</span>
-          <span><b id="latestPeriodShort">06月</b>最新期</span>
-        </div>
-      </article>
-
       <article class="dash-card span-7 ranking-card">
         <header class="dash-card-head">
           <div>
-            <span class="section-no">03</span>
+            <span class="section-no">02</span>
             <h3>地市规模排名</h3>
             <p id="rankingSubtitle">营业收入，单位：亿元</p>
           </div>
@@ -105,7 +84,7 @@
       <article class="dash-card span-5 sector-card">
         <header class="dash-card-head">
           <div>
-            <span class="section-no">04</span>
+            <span class="section-no">03</span>
             <h3>四领域营收结构</h3>
             <p>营业收入占全省比重及同比增速</p>
           </div>
@@ -116,7 +95,7 @@
       <article class="dash-card span-12 heatmap-card">
         <header class="dash-card-head">
           <div>
-            <span class="section-no">05</span>
+            <span class="section-no">04</span>
             <h3>地市增长热力监测</h3>
             <p>同比增速；蓝色表示增长，橙色表示下降，特殊状态按原表保留</p>
           </div>
@@ -127,7 +106,7 @@
       <article class="dash-card span-12 detail-table-card">
         <header class="dash-card-head">
           <div>
-            <span class="section-no">06</span>
+            <span class="section-no">05</span>
             <h3>地市监测明细</h3>
             <p>金额单位：亿元；平均用工单位：万人</p>
           </div>
