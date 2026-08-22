@@ -125,12 +125,27 @@
     const el = document.getElementById("orgFlow");
     if (!el) return;
     el.innerHTML = `
-      <div class="flow-line">组长：刘捷省长</div>
-      <div class="arrow">↓</div>
-      <div class="flow-line">副组长：徐文光常务副省长<br>何中伟副省长</div>
-      <div class="arrow">↓</div>
-      <div class="flow-line">人工智能办公室<br>（省发展改革委牵头）</div>
-      <div class="flow-line">专家智库协同支撑</div>
+      <div class="org-flow-list">
+        <div class="org-flow-item org-flow-item--lead">
+          <span class="org-step">1</span>
+          <div class="org-flow-copy">组长：刘捷省长</div>
+        </div>
+        <div class="org-flow-arrow" aria-hidden="true">↓</div>
+        <div class="org-flow-item">
+          <span class="org-step">2</span>
+          <div class="org-flow-copy">副组长：徐文光常务副省长<br>何中伟副省长</div>
+        </div>
+        <div class="org-flow-arrow" aria-hidden="true">↓</div>
+        <div class="org-flow-item org-flow-item--office">
+          <span class="org-step">3</span>
+          <div class="org-flow-copy">人工智能办公室<br><span>（省发展改革委牵头）</span></div>
+        </div>
+        <div class="org-flow-arrow" aria-hidden="true">↓</div>
+        <div class="org-flow-item org-flow-item--support">
+          <span class="org-step">4</span>
+          <div class="org-flow-copy">专家智库协同支撑</div>
+        </div>
+      </div>
     `;
   }
 
@@ -176,13 +191,23 @@
   function buildMechanism() {
     const el = document.querySelector(".mechanism");
     if (!el) return;
-    const chain = MECH_DATA.chain.map((c, i) =>
-      i > 0 ? `<div class="mechanism-up">↑</div><div>${esc(c)}</div>` : `<div>${esc(c)}</div>`
-    ).join("");
-    const topics = MECH_DATA.topics.map(t => `<div>${esc(t)}</div>`).join("");
+    const chain = [...MECH_DATA.chain].reverse();
+    const chainMarkup = chain.map((c, i) => `
+      <div class="mechanism-chain-item">
+        <span class="mechanism-step">${i + 1}</span>
+        <span>${esc(c)}</span>
+      </div>
+      ${i < chain.length - 1 ? `<div class="mechanism-down" aria-hidden="true">↓</div>` : ""}
+    `).join("");
+    const topics = MECH_DATA.topics.map((t, i) => `
+      <div class="mechanism-topic">
+        <span class="mechanism-topic-mark" aria-hidden="true">${i + 1}</span>
+        <span>${esc(t)}</span>
+      </div>
+    `).join("");
     el.innerHTML = `
-      <div class="mechanism-chain">${chain}</div>
-      <div class="mechanism-next" aria-hidden="true">⇨</div>
+      <div class="mechanism-chain">${chainMarkup}</div>
+      <div class="mechanism-next" aria-hidden="true">→</div>
       <div class="mechanism-topics">${topics}</div>
       <div class="mechanism-level">${esc(MECH_DATA.paradigm)}</div>
     `;
