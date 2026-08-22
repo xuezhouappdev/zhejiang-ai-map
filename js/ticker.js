@@ -28,6 +28,23 @@
   };
 
   /**
+   * 将整条资讯栏绑定为资讯库入口，并补齐键盘操作。
+   * @param {HTMLElement|null} ticker
+   * @returns {void}
+   */
+  const bindTickerLink = ticker => {
+    const href = ticker?.dataset.href;
+    if (!ticker || !href) return;
+    const navigate = () => { location.href = href; };
+    ticker.addEventListener("click", navigate);
+    ticker.addEventListener("keydown", event => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      navigate();
+    });
+  };
+
+  /**
    * 初始化滚动条：日期 + 文本接龙。
    * @returns {void}
    */
@@ -52,6 +69,7 @@
       track.innerHTML = items + '<span class="ticker-sep">｜</span>' + items;
     }
     syncTickerSpeed(track);
+    bindTickerLink(document.querySelector(".news-ticker"));
   };
 
   window.Ticker = { initTicker };
