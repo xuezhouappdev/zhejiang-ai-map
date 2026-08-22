@@ -90,6 +90,7 @@
     "应用场景": "scene.html"
   };
   const guaranteePageRoutes = {
+    "资讯库": "news.html",
     "政策库": "policies.html",
     "项目库": "projects.html",
     "场景库": "scene.html",
