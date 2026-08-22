@@ -20,7 +20,6 @@
     heatmapTable: document.getElementById("heatmapTable"),
     detailTable: document.getElementById("detailTable"),
     currentSource: document.getElementById("currentSource"),
-    sourceFiles: document.getElementById("sourceFiles"),
     coverageText: document.getElementById("coverageText"),
     latestPeriodShort: document.getElementById("latestPeriodShort"),
   };
@@ -273,7 +272,6 @@
   const init = () => {
     refs.monthSelect.innerHTML = [...data.months].reverse().map(item => `<option value="${item.month}" ${item.month === state.month ? "selected" : ""}>${monthLabel(item.month)}</option>`).join("");
     refs.coverageText.textContent = `${data.coverage.periods}期数据`;
-    refs.sourceFiles.innerHTML = data.months.map(item => `<span>${esc(item.source)}</span>`).join("");
 
     refs.monthSelect.addEventListener("change", event => {
       state.month = event.target.value;

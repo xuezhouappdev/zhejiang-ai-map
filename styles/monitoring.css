@@ -66,25 +66,29 @@ select {
   letter-spacing: .18em;
 }
 
-.monitor-nav {
+.monitor-header .breadcrumb {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 10px;
+  color: #dbeafe;
+  font-size: 13px;
+  white-space: nowrap;
 }
 
-.monitor-nav a {
-  padding: 8px 12px;
+.monitor-header .breadcrumb a {
   color: #fff;
-  border: 1px solid rgba(255, 255, 255, .3);
   text-decoration: none;
-  font-size: 12px;
-  transition: background-color .18s ease, border-color .18s ease;
 }
 
-.monitor-nav a:hover,
-.monitor-nav a:focus-visible {
-  background: rgba(255, 255, 255, .12);
-  border-color: rgba(255, 255, 255, .58);
+.monitor-header .breadcrumb a:hover,
+.monitor-header .breadcrumb a:focus-visible {
+  text-decoration: underline;
   outline: none;
+}
+
+.monitor-header .breadcrumb strong {
+  color: #fff;
+  font-weight: 700;
 }
 
 .monitor-shell {
@@ -778,46 +782,6 @@ select {
   color: #9a3412;
 }
 
-.methodology-card {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
-  gap: 24px;
-  margin-top: 12px;
-  padding: 20px 22px;
-  background: #fff;
-  border: 1px solid var(--monitor-line);
-  box-shadow: var(--monitor-shadow);
-}
-
-.methodology-card h3 {
-  margin: 0 0 7px;
-  color: var(--monitor-blue);
-  font-size: 15px;
-}
-
-.methodology-card p {
-  margin: 0;
-  color: var(--monitor-muted);
-  font-size: 11px;
-  line-height: 1.7;
-}
-
-.source-files {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: flex-end;
-  align-content: center;
-}
-
-.source-files span {
-  padding: 6px 8px;
-  color: #526b83;
-  background: #eff6ff;
-  border: 1px solid #dbeafe;
-  font-size: 10px;
-}
-
 .noscript-note {
   padding: 18px;
   color: #9a3412;
@@ -856,12 +820,14 @@ select {
     padding: 14px 16px;
   }
 
-  .monitor-nav {
+  .monitor-header .breadcrumb {
     width: 100%;
     overflow-x: auto;
   }
 
-  .monitor-nav a {
+  .monitor-header .breadcrumb a,
+  .monitor-header .breadcrumb strong,
+  .monitor-header .breadcrumb span {
     white-space: nowrap;
   }
 
@@ -932,13 +898,6 @@ select {
     gap: 5px;
   }
 
-  .methodology-card {
-    grid-template-columns: 1fr;
-  }
-
-  .source-files {
-    justify-content: flex-start;
-  }
 }
 
 @media (max-width: 460px) {

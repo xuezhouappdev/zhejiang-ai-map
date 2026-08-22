@@ -140,7 +140,14 @@
 
   const rail = side => {
     const source = side === "left" ? rails.leftRail : rails.rightRail;
-    return `<aside class="overview-rail ${side}"><div class="overview-rail-title">${esc(source?.label)}</div>${(source?.items || []).map(item => `<div class="overview-rail-item"><strong>${esc(item.name)}</strong>${(item.desc || []).map(desc => `<span>${esc(desc)}</span>`).join("")}</div>`).join("")}</aside>`;
+    const items = (source?.items || []).map(item => {
+      const content = `<strong>${esc(item.name)}</strong>${(item.desc || []).map(desc => `<span>${esc(desc)}</span>`).join("")}`;
+      const isMonitoring = side === "left" && item.name === "统计" && (item.desc || []).join("") === "监测机制";
+      return isMonitoring
+        ? `<a class="overview-rail-item overview-rail-link" href="monitoring.html">${content}</a>`
+        : `<div class="overview-rail-item">${content}</div>`;
+    }).join("");
+    return `<aside class="overview-rail ${side}"><div class="overview-rail-title">${esc(source?.label)}</div>${items}</aside>`;
   };
   const cells = rows
     .map(label => {
