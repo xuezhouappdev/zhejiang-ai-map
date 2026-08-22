@@ -379,14 +379,14 @@
     return html;
   };
 
-  const renderBaseTaskCard = (task, project, base, record, index) => {
+  const renderBaseTaskCard = (task, project, base, record, index, isCapability) => {
     const saved = (record.tasks || []).find(item => item.name === task) || {};
     const metric = baseMetric(base, task);
     const metricValue = saved.metricValue != null ? saved.metricValue : "";
     const defaultPlan = task === "国债资金完成率／支付率" && project["2026年计划投资"]
       ? "年度投资计划：" + fmtYi(project["2026年计划投资"]) + "。"
       : "";
-    const filled = Boolean(saved.cumulative || saved.nextMonth || saved.issues);
+    const filled = Boolean(saved.cumulative || saved.nextMonth || saved.issues || saved.landmark);
     let html = '<details class="pd-base-task-card" data-base-task="' + esc(task) + '"' + (index === 0 ? " open" : "") + '>';
     html += '<summary><span class="pd-base-task-summary-title"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i>' + esc(task) + '</span>';
     html += '<span class="pd-base-task-status ' + (filled ? "is-filled" : "") + '">' + (filled ? "已填报" : "待填报") + '</span></summary>';
@@ -404,7 +404,10 @@
       html += '<label class="pd-base-measure-field">当前测算值（' + esc(metric.unit || "项") + '）<input type="number" min="0" step="any" data-base-field="metricValue" value="' + esc(metricValue) + '" placeholder="填写当前值"><small>填写后将实时更新目标进度</small></label>';
     }
     html += '<label>2026年度计划<textarea data-base-field="annualPlan" rows="3" placeholder="请填入国家批复的年度绩效目标和年度任务">' + esc(saved.annualPlan || defaultPlan) + '</textarea></label>';
-    html += '<label>累计至本月推进情况<textarea data-base-field="cumulative" rows="3" placeholder="请填写截至本月的累计推进情况">' + esc(saved.cumulative || "") + '</textarea></label>';
+    if (isCapability) {
+      html += '<label class="pd-base-landmark-field">标志性成果<textarea data-base-field="landmark" rows="3" placeholder="（一）标志性成果：1.……；2.……">' + esc(saved.landmark || "") + '</textarea></label>';
+    }
+    html += '<label>累计至本月推进情况<textarea data-base-field="cumulative" rows="3" placeholder="（一）标志性成果；（二）绩效指标完成情况，请填写截至本月的累计推进情况">' + esc(saved.cumulative || "") + '</textarea></label>';
     html += '<label>下月计划<textarea data-base-field="nextMonth" rows="3" placeholder="请填写下月重点工作安排">' + esc(saved.nextMonth || "") + '</textarea></label>';
     html += '<label class="pd-base-issue-field">存在问题及协调事项<textarea data-base-field="issues" rows="3" placeholder="如无问题请填写“无”">' + esc(saved.issues || "") + '</textarea></label>';
     html += '</div></div></details>';
@@ -426,7 +429,6 @@
       html += '<label class="pd-base-choice"><input type="radio" name="shareType" value="' + esc(option) + '" ' + (shareType === option ? "checked" : "") + '>' + esc(option) + '</label>';
     });
     html += '</div></div>';
-    html += '<div class="pd-base-need-condition pd-base-need-landmark" data-base-ability-fields ' + (type === "需求" ? "hidden" : "") + '><span>标志性成果</span><textarea name="landmark" rows="3" placeholder="填写该能力形成的标志性成果，如落地应用、产出模型、服务案例等">' + esc(item.landmark || "") + '</textarea></div>';
     html += '<div class="pd-base-need-condition" data-base-demand-fields ' + (type === "能力" ? "hidden" : "") + '><span>需求类型</span><div class="pd-base-choice-row">';
     BASE_NEED_TYPES.forEach(option => {
       html += '<label class="pd-base-choice"><input type="checkbox" name="needResource" value="' + esc(option) + '" ' + (resources.includes(option) ? "checked" : "") + '>' + esc(option) + '</label>';
@@ -460,7 +462,7 @@
     if (!records.length) return '<div class="pd-empty">暂无基地月度调度记录</div>';
     const rows = records.map(record => {
       const tasks = Array.isArray(record.tasks) ? record.tasks : [];
-      const filled = tasks.filter(item => item.cumulative || item.nextMonth || item.issues).length;
+      const filled = tasks.filter(item => item.cumulative || item.nextMonth || item.issues || item.landmark).length;
       const issues = tasks.filter(item => item.issues && item.issues !== "无").length;
       const needs = Array.isArray(record.capabilityNeeds) ? record.capabilityNeeds.filter(item => item.name).length : 0;
       return '<tr><td class="pd-month">' + esc(record.month) + '</td><td>' + (record.isDraft ? "草稿" : "已提交") + '</td><td class="pd-num">' + filled + ' / 8</td><td class="pd-num">' + needs + '</td><td class="pd-num ' + (issues ? "pd-issue" : "") + '">' + issues + '</td><td class="pd-time">' + esc(record.updatedAt || "—") + '</td></tr>';
@@ -491,7 +493,7 @@
     BASE_TASK_GROUPS.forEach(group => {
       html += '<div class="pd-base-task-group"><h4>' + esc(group.name) + '</h4>';
       group.tasks.forEach(task => {
-        html += renderBaseTaskCard(task, project, base, current, taskIndex);
+        html += renderBaseTaskCard(task, project, base, current, taskIndex, group.name === "一、项目建设");
         taskIndex += 1;
       });
       html += '</div>';
@@ -639,7 +641,6 @@
     resourceTypes: [...row.querySelectorAll('[name="needResource"]:checked')].map(input => input.value),
     connectStatus: row.querySelector('[name="connectStatus"]')?.value || "待对接",
     connectNote: String(row.querySelector('[name="connectNote"]')?.value || "").trim(),
-    landmark: String(row.querySelector('[name="landmark"]')?.value || "").trim(),
   }));
 
   const handleBaseSubmit = (event, asDraft = false) => {
@@ -662,6 +663,7 @@
         name: card.dataset.baseTask || "",
         metricValue: metricInput ? Number(metricInput) : parseFirstNumber(cumulative),
         annualPlan: String(card.querySelector('[data-base-field="annualPlan"]')?.value || "").trim(),
+        landmark: String(card.querySelector('[data-base-field="landmark"]')?.value || "").trim(),
         cumulative,
         nextMonth: String(card.querySelector('[data-base-field="nextMonth"]')?.value || "").trim(),
         issues: String(card.querySelector('[data-base-field="issues"]')?.value || "").trim(),
@@ -675,7 +677,7 @@
       contact: String(fd.get("contact") || "").trim(),
       phone: String(fd.get("phone") || "").trim(),
       tasks,
-      capabilityNeeds: readBaseNeedRows(form).filter(item => item.name || item.connectNote || item.landmark),
+      capabilityNeeds: readBaseNeedRows(form).filter(item => item.name || item.connectNote),
       isDraft: asDraft,
       updatedAt: new Date().toLocaleString("zh-CN", { hour12: false }),
     };

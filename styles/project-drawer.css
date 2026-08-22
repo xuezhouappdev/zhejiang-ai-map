@@ -894,12 +894,6 @@
 .pd-base-need-note {
   grid-column: span 4;
 }
-.pd-base-need-landmark {
-  grid-column: span 4;
-}
-.pd-base-need-landmark textarea {
-  width: 100%;
-}
 .pd-base-actions {
   position: sticky;
   bottom: -22px;
