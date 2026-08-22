@@ -170,7 +170,6 @@
    * @type {Record<string, PageRoute>}
    */
   const PAGE_ROUTES = {
-    "目标体系":  { href: "pages/goals.html",    title: "总体目标",     eyebrow: "STRATEGIC GOALS" },
     "政策体系":  { href: "pages/policies.html", title: "政策体系",     eyebrow: "POLICY SYSTEM" },
     "重点任务":  { href: "pages/tasks.html",    title: "重点任务清单", eyebrow: "KEY TASKS" },
     "重大项目":  { href: "pages/projects.html", title: "重大项目",     eyebrow: "FLAGSHIP PROJECTS" },

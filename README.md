@@ -13,7 +13,6 @@
 │   ├── tasks.html        # 重点任务清单页（支持筛选/搜索）
 │   ├── data/
 │   │   ├── tasks.json   # 任务清单数据（113 条）
-│   │   ├── goals.json   # 1+5 目标体系
 │   │   ├── rail.json    # 工作体系/评价体系
 │   │   └── map.svg      # 浙江省 11 地市地图
 │   ├── styles/
@@ -41,7 +40,6 @@ python3 -m http.server 8080
 
 **修改数据**
 - 任务清单：编辑 `data/tasks.json`
-- 目标体系：编辑 `data/goals.json`
 - 侧边栏体系：编辑 `data/rail.json`
 - 地图：替换 `data/map.svg`（SVG 格式）
 
