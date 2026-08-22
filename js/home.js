@@ -127,22 +127,19 @@
     el.innerHTML = `
       <div class="org-flow-list">
         <div class="org-flow-item org-flow-item--lead">
-          <span class="org-step">1</span>
-          <div class="org-flow-copy">组长：刘捷省长</div>
+          <span class="org-step">01</span>
+          <div class="org-flow-copy"><span class="org-flow-role">组长：</span>刘捷省长</div>
         </div>
-        <div class="org-flow-arrow" aria-hidden="true">↓</div>
         <div class="org-flow-item">
-          <span class="org-step">2</span>
-          <div class="org-flow-copy">副组长：徐文光常务副省长<br>何中伟副省长</div>
+          <span class="org-step">02</span>
+          <div class="org-flow-copy"><span class="org-flow-role">副组长：</span>徐文光常务副省长<br>何中伟副省长</div>
         </div>
-        <div class="org-flow-arrow" aria-hidden="true">↓</div>
         <div class="org-flow-item org-flow-item--office">
-          <span class="org-step">3</span>
-          <div class="org-flow-copy">人工智能办公室<br><span>（省发展改革委牵头）</span></div>
+          <span class="org-step">03</span>
+          <div class="org-flow-copy">人工智能办公室<br><span class="org-flow-note">（省发展改革委牵头）</span></div>
         </div>
-        <div class="org-flow-arrow" aria-hidden="true">↓</div>
         <div class="org-flow-item org-flow-item--support">
-          <span class="org-step">4</span>
+          <span class="org-step">04</span>
           <div class="org-flow-copy">专家智库协同支撑</div>
         </div>
       </div>
@@ -194,21 +191,26 @@
     const chain = [...MECH_DATA.chain].reverse();
     const chainMarkup = chain.map((c, i) => `
       <div class="mechanism-chain-item">
-        <span class="mechanism-step">${i + 1}</span>
+        <span class="mechanism-step">0${i + 1}</span>
         <span>${esc(c)}</span>
       </div>
-      ${i < chain.length - 1 ? `<div class="mechanism-down" aria-hidden="true">↓</div>` : ""}
     `).join("");
-    const topics = MECH_DATA.topics.map((t, i) => `
+    const topics = MECH_DATA.topics.map(t => `
       <div class="mechanism-topic">
-        <span class="mechanism-topic-mark" aria-hidden="true">${i + 1}</span>
+        <span class="mechanism-topic-mark" aria-hidden="true"></span>
         <span>${esc(t)}</span>
       </div>
     `).join("");
     el.innerHTML = `
-      <div class="mechanism-chain">${chainMarkup}</div>
-      <div class="mechanism-next" aria-hidden="true">→</div>
-      <div class="mechanism-topics">${topics}</div>
+      <section class="mechanism-section" aria-label="机制流程">
+        <div class="mechanism-section-title">机制流程</div>
+        <div class="mechanism-chain">${chainMarkup}</div>
+      </section>
+      <div class="mechanism-divider" aria-hidden="true"></div>
+      <section class="mechanism-section" aria-label="专题方向">
+        <div class="mechanism-section-title">专题方向</div>
+        <div class="mechanism-topics">${topics}</div>
+      </section>
       <div class="mechanism-level">${esc(MECH_DATA.paradigm)}</div>
     `;
   }
