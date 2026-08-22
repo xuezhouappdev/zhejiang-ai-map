@@ -762,6 +762,18 @@ body {
   white-space: nowrap;
   writing-mode: horizontal-tb;
 }
+.overview-rail-link {
+  text-decoration: none;
+  cursor: pointer;
+  transition: filter .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+.overview-rail-link:hover,
+.overview-rail-link:focus-visible {
+  filter: brightness(1.12);
+  transform: translateX(2px);
+  box-shadow: 0 6px 18px rgba(30, 64, 175, .2);
+  outline: none;
+}
 .overview-news-ticker {
   width: min(1500px, calc(100% - 48px));
   height: 42px;
