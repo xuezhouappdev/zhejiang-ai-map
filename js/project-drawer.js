@@ -426,6 +426,7 @@
       html += '<label class="pd-base-choice"><input type="radio" name="shareType" value="' + esc(option) + '" ' + (shareType === option ? "checked" : "") + '>' + esc(option) + '</label>';
     });
     html += '</div></div>';
+    html += '<div class="pd-base-need-condition pd-base-need-landmark" data-base-ability-fields ' + (type === "需求" ? "hidden" : "") + '><span>标志性成果</span><textarea name="landmark" rows="3" placeholder="填写该能力形成的标志性成果，如落地应用、产出模型、服务案例等">' + esc(item.landmark || "") + '</textarea></div>';
     html += '<div class="pd-base-need-condition" data-base-demand-fields ' + (type === "能力" ? "hidden" : "") + '><span>需求类型</span><div class="pd-base-choice-row">';
     BASE_NEED_TYPES.forEach(option => {
       html += '<label class="pd-base-choice"><input type="checkbox" name="needResource" value="' + esc(option) + '" ' + (resources.includes(option) ? "checked" : "") + '>' + esc(option) + '</label>';
@@ -627,10 +628,8 @@
 
   const toggleBaseNeedFields = row => {
     const type = row.querySelector('[data-base-need-type]')?.value || "能力";
-    const abilityFields = row.querySelector('[data-base-ability-fields]');
-    const demandFields = row.querySelector('[data-base-demand-fields]');
-    if (abilityFields) abilityFields.hidden = type === "需求";
-    if (demandFields) demandFields.hidden = type === "能力";
+    row.querySelectorAll("[data-base-ability-fields]").forEach(el => { el.hidden = type === "需求"; });
+    row.querySelectorAll("[data-base-demand-fields]").forEach(el => { el.hidden = type === "能力"; });
   };
 
   const readBaseNeedRows = form => [...form.querySelectorAll("[data-base-need-row]")].map(row => ({
@@ -640,6 +639,7 @@
     resourceTypes: [...row.querySelectorAll('[name="needResource"]:checked')].map(input => input.value),
     connectStatus: row.querySelector('[name="connectStatus"]')?.value || "待对接",
     connectNote: String(row.querySelector('[name="connectNote"]')?.value || "").trim(),
+    landmark: String(row.querySelector('[name="landmark"]')?.value || "").trim(),
   }));
 
   const handleBaseSubmit = (event, asDraft = false) => {
@@ -675,7 +675,7 @@
       contact: String(fd.get("contact") || "").trim(),
       phone: String(fd.get("phone") || "").trim(),
       tasks,
-      capabilityNeeds: readBaseNeedRows(form).filter(item => item.name || item.connectNote),
+      capabilityNeeds: readBaseNeedRows(form).filter(item => item.name || item.connectNote || item.landmark),
       isDraft: asDraft,
       updatedAt: new Date().toLocaleString("zh-CN", { hour12: false }),
     };
