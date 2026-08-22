@@ -363,11 +363,11 @@
       ? Math.round(highlights.reduce((sum, metric) => sum + Number(metric.progress || 0), 0) / highlights.length)
       : 0;
     let html = '<section class="pd-section pd-base-overview-section">';
-    html += '<div class="pd-base-section-head"><div><span class="pd-base-kicker">目标测算</span><h3>年度计划与三年行动进度</h3></div>';
+    html += '<div class="pd-base-section-head"><div><span class="pd-base-kicker">目标测算</span><h3>年度计划完成情况与三年目标完成情况</h3></div>';
     html += '<span class="pd-base-source">综合完成度约 <b data-base-overall-progress>' + averageProgress + '%</b></span></div>';
     html += '<div class="pd-base-overview-cards">';
     html += '<article class="pd-base-overview-card pd-base-card-annual"><span>2026年度计划投资</span><strong>' + esc(fmtYi(project["2026年计划投资"])) + '</strong><small>项目年度投资计划</small></article>';
-    html += '<article class="pd-base-overview-card pd-base-card-action pd-base-card-action-wide"><span>三年行动综合进度</span><strong data-base-overall-value>' + averageProgress + '%</strong><div class="pd-base-progress-track"><i data-base-overall-fill style="width:' + averageProgress + '%"></i></div><small>按各项目标当前值与目标值测算</small></article>';
+    html += '<article class="pd-base-overview-card pd-base-card-action pd-base-card-action-wide"><span>三年目标完成情况</span><strong data-base-overall-value>' + averageProgress + '%</strong><div class="pd-base-progress-track"><i data-base-overall-fill style="width:' + averageProgress + '%"></i></div><small>按各项目标当前值与目标值测算</small></article>';
     html += '</div><div class="pd-base-metric-grid">';
     highlights.forEach(metric => {
       const progress = Math.max(0, Math.min(100, Number(metric.progress || 0)));
