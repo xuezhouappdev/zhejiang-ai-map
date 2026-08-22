@@ -48,10 +48,9 @@
     const date = policy.date || "—";
     const id = policy.id ?? "—";
     const pdfUrl = policy.pdfUrl || "";
-    const pdfName = pdfUrl.split("/").pop() || `${name}.pdf`;
 
     const downloadButton = pdfUrl
-      ? `<a class="policy-detail-download" href="${esc(pdfUrl)}" download="${esc(pdfName)}" aria-label="下载政策文件 PDF">
+      ? `<a class="policy-detail-download" href="${esc(pdfUrl)}" target="_blank" rel="noopener" aria-label="在新窗口浏览政策文件 PDF">
            <i class="fa-solid fa-file-pdf" aria-hidden="true"></i>
            <span>下载 PDF</span>
          </a>`
