@@ -87,8 +87,8 @@
         { key: "领域",             label: "细分赛道", width: "minmax(105px,1fr)" },
         { key: "建设地点",          label: "地点",   width: "70px" },
         { key: "起止年限",          label: "年限",   width: "76px", sortable: true, sortType: "year" },
-        { key: "总投资",           label: "总投资（亿元）", width: "78px", number: true, sortable: true },
-        { key: "2026年计划投资",    label: "2026计划（亿元）", width: "90px", number: true, sortable: true },
+        { key: "总投资",           label: "总投资\n（亿元）", width: "92px", number: true, sortable: true },
+        { key: "2026年计划投资",    label: "2026计划\n（亿元）", width: "92px", number: true, sortable: true },
         { key: "项目业主",          label: "项目业主", width: "minmax(140px,1.2fr)" },
         { key: "建设性质",          label: "性质",   width: "60px" },
       ],
@@ -293,12 +293,15 @@
         headEl.innerHTML = displayColumns.map(c => {
           const sortable = c.sortable;
           const indicator = sortState.key === c.key ? (sortState.direction === 1 ? "▲" : "▼") : "↕";
-          const attrs = c.key === "__dispatch"
-            ? ` class="list-head-action"`
-            : sortable
-              ? ` class="list-sortable" data-sort-key="${esc(c.key)}" role="button" tabindex="0" aria-label="按${esc(c.label)}排序"`
-              : "";
-          return `<div${attrs}>${c.label.replace(/\n/g, "<br>")}${sortable ? `<span class="sort-indicator">${indicator}</span>` : ""}</div>`;
+          const classes = [];
+          if (c.key === "__dispatch") classes.push("list-head-action");
+          if (c.number) classes.push("list-head-num");
+          if (sortable) classes.push("list-sortable");
+          const classStr = classes.length ? ` class="${classes.join(" ")}"` : "";
+          const sortAttrs = sortable
+            ? ` data-sort-key="${esc(c.key)}" role="button" tabindex="0" aria-label="按${esc(c.label.replace(/\n/g, ""))}排序"`
+            : "";
+          return `<div${classStr}${sortAttrs}>${c.label.replace(/\n/g, "<br>")}${sortable ? `<span class="sort-indicator">${indicator}</span>` : ""}</div>`;
         }).join("");
       }
       if (!rowsEl) return;

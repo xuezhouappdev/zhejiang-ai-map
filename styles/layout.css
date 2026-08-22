@@ -1571,6 +1571,11 @@ body.list-page { min-height:100vh; background:#F8FAFC; }
   min-width: 0;
   white-space: nowrap;
 }
+/* 数字列表头居中，与数据行对齐方式一致 */
+.list-body > .list-head > div.list-head-num {
+  justify-content: center;
+  text-align: center;
+}
 .list-body > .list-head > div.list-sortable {
   cursor: pointer;
   user-select: none;
