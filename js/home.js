@@ -125,22 +125,25 @@
     const el = document.getElementById("orgFlow");
     if (!el) return;
     el.innerHTML = `
-      <div class="org-command">
-        <div class="org-command-item org-command-item--lead">
-          <span class="org-command-marker" aria-hidden="true"></span>
-          <div class="org-command-body"><span class="org-command-role">组长：</span>刘捷省长</div>
+      <div class="org-flow-list">
+        <div class="org-flow-item org-flow-item--lead">
+          <span class="org-step">1</span>
+          <div class="org-flow-copy">组长：刘捷省长</div>
         </div>
-        <div class="org-command-item">
-          <span class="org-command-marker" aria-hidden="true"></span>
-          <div class="org-command-body"><span class="org-command-role">副组长：</span>徐文光常务副省长<br>何中伟副省长</div>
+        <div class="org-flow-arrow" aria-hidden="true">↓</div>
+        <div class="org-flow-item">
+          <span class="org-step">2</span>
+          <div class="org-flow-copy">副组长：徐文光常务副省长<br>何中伟副省长</div>
         </div>
-        <div class="org-command-item org-command-item--office">
-          <span class="org-command-marker" aria-hidden="true"></span>
-          <div class="org-command-body">人工智能办公室<br><span class="org-command-note">（省发展改革委牵头）</span></div>
+        <div class="org-flow-arrow" aria-hidden="true">↓</div>
+        <div class="org-flow-item org-flow-item--office">
+          <span class="org-step">3</span>
+          <div class="org-flow-copy">人工智能办公室<br><span class="org-flow-note">（省发展改革委牵头）</span></div>
         </div>
-        <div class="org-command-item org-command-item--support">
-          <span class="org-command-marker" aria-hidden="true"></span>
-          <div class="org-command-body">专家智库协同支撑</div>
+        <div class="org-flow-arrow" aria-hidden="true">↓</div>
+        <div class="org-flow-item org-flow-item--support">
+          <span class="org-step">4</span>
+          <div class="org-flow-copy">专家智库协同支撑</div>
         </div>
       </div>
     `;
@@ -190,14 +193,16 @@
     if (!el) return;
     const chain = [...MECH_DATA.chain].reverse();
     const chainMarkup = chain.map((c, i) => `
-      <div class="mechanism-flow-item">
-        <span class="mechanism-flow-index">0${i + 1}</span>
+      <div class="mechanism-chain-item">
+        <span class="mechanism-step">${i + 1}</span>
         <span>${esc(c)}</span>
       </div>
+      ${i < chain.length - 1 ? `<div class="mechanism-down" aria-hidden="true">↓</div>` : ""}
     `).join("");
-    const topics = MECH_DATA.topics.map(t => `
-      <div class="mechanism-topic-item">
-        <span class="mechanism-topic-mark" aria-hidden="true"></span>
+    const topicIcons = ["fa-microchip", "fa-database", "fa-cube", "fa-table-cells-large", "fa-leaf"];
+    const topics = MECH_DATA.topics.map((t, i) => `
+      <div class="mechanism-topic">
+        <span class="mechanism-topic-icon" aria-hidden="true"><i class="fa-solid ${topicIcons[i]}"></i></span>
         <span>${esc(t)}</span>
       </div>
     `).join("");
@@ -206,15 +211,16 @@
       ? `<span class="mechanism-level-code">${esc(paradigmMatch[1])}</span><span class="mechanism-level-name">${esc(paradigmMatch[2])}</span><span class="mechanism-level-note">（${esc(paradigmMatch[3])}）</span>`
       : `<span class="mechanism-level-name">${esc(MECH_DATA.paradigm || "")}</span>`;
     el.innerHTML = `
-      <section class="mechanism-block mechanism-block--flow" aria-label="机制流程">
-        <div class="mechanism-block-head"><span class="mechanism-block-index">01</span><span>机制流程</span></div>
-        <div class="mechanism-flow">${chainMarkup}</div>
-      </section>
-      <div class="mechanism-plus" aria-hidden="true">＋</div>
-      <section class="mechanism-block mechanism-block--topics" aria-label="专题方向">
-        <div class="mechanism-block-head"><span class="mechanism-block-index">02</span><span>专题方向</span></div>
-        <div class="mechanism-topic-list">${topics}</div>
-      </section>
+      <div class="mechanism-panels">
+        <section class="mechanism-panel mechanism-panel--chain" aria-label="机制流程">
+          <div class="mechanism-panel-title">机制流程</div>
+          <div class="mechanism-chain">${chainMarkup}</div>
+        </section>
+        <section class="mechanism-panel mechanism-panel--topics" aria-label="专题方向">
+          <div class="mechanism-panel-title">专题方向</div>
+          <div class="mechanism-topics">${topics}</div>
+        </section>
+      </div>
       <div class="mechanism-level">${paradigmMarkup}</div>
     `;
   }
