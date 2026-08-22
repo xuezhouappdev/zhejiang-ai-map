@@ -55,6 +55,11 @@ body {
 .page-header a:hover {
   background: rgba(255, 255, 255, 0.12);
 }
+.page-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .detail-shell {
   width: min(1440px, calc(100% - 48px));
   margin: 30px auto 60px;

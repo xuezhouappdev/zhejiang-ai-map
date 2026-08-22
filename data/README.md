@@ -18,6 +18,7 @@
 | 8 | `tasks.json` | `tasks.js` | 重点任务 |
 | 9 | `experts.json` | `experts.js` | 专家委员会名单 |
 | 10 | `objects.json` | `objects.js` | 目标体系分维度 |
+| 11 | `monitoring.json` | `monitoring.js` | 人工智能产业月度统计监测 |
 
 辅助文件：
 

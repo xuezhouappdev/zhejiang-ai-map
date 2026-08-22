@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>统计监测｜浙江省人工智能高质量发展工作图谱</title>
+  <link rel="stylesheet" href="../vendor/modern-normalize.min.css">
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../assets/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="../styles/monitoring.css">
+</head>
+<body class="monitoring-page">
+  <header class="monitor-header">
+    <div class="monitor-header-title">
+      <small>MONTHLY STATISTICAL MONITORING</small>
+      <h1>人工智能产业统计监测</h1>
+    </div>
+    <nav class="monitor-nav" aria-label="页面导航">
+      <a href="../index.html">工作推进总览</a>
+      <a href="details.html">五位一体任务清单</a>
+    </nav>
+  </header>
+
+  <main class="monitor-shell">
+    <section class="monitor-hero" aria-labelledby="monitorTitle">
+      <div class="monitor-hero-copy">
+        <div class="monitor-eyebrow"><span></span>统计监测机制</div>
+        <h2 id="monitorTitle">月度运行态势驾驶舱</h2>
+        <p>围绕企业规模、营业收入、营业成本、研发投入、利润和用工开展月度监测，按地市和产业领域双维度汇总校验。</p>
+        <div class="monitor-meta">
+          <span><i class="fa-regular fa-calendar"></i><b id="coverageText">6期数据</b></span>
+          <span><i class="fa-solid fa-location-dot"></i>11个地市</span>
+          <span><i class="fa-solid fa-layer-group"></i>4个产业领域</span>
+          <span class="warning"><i class="fa-solid fa-triangle-exclamation"></i>2026-01 缺报</span>
+        </div>
+      </div>
+      <div class="monitor-control-card">
+        <label for="monthSelect">当前监测期</label>
+        <select id="monthSelect" aria-label="选择监测月份"></select>
+        <div class="monitor-freshness">
+          <span>数据状态</span><strong><i></i>已完成勾稽校验</strong>
+        </div>
+        <div class="monitor-source-current">来源：<span id="currentSource">—</span></div>
+      </div>
+    </section>
+
+    <section class="kpi-grid" id="kpiGrid" aria-label="核心监测指标"></section>
+
+    <section class="dashboard-grid">
+      <article class="dash-card span-8 trend-card">
+        <header class="dash-card-head">
+          <div>
+            <span class="section-no">01</span>
+            <h3>全省累计指标走势</h3>
+            <p>2026年已报月份；柱顶标注同比增速</p>
+          </div>
+          <div class="metric-tabs" id="trendTabs" aria-label="趋势指标切换">
+            <button type="button" data-metric="revenue" class="active">营业收入</button>
+            <button type="button" data-metric="rd">研发费用</button>
+            <button type="button" data-metric="employment">平均用工</button>
+          </div>
+        </header>
+        <div class="chart-host" id="trendChart" aria-live="polite"></div>
+      </article>
+
+      <article class="dash-card span-4 mechanism-monitor-card">
+        <header class="dash-card-head">
+          <div>
+            <span class="section-no">02</span>
+            <h3>月度统计监测机制</h3>
+            <p>报送、校验、分析、反馈闭环</p>
+          </div>
+        </header>
+        <ol class="monitor-cycle">
+          <li><span>1</span><div><b>月度报送</b><small>地市和产业领域数据归集</small></div></li>
+          <li><span>2</span><div><b>口径校验</b><small>省级、地市、领域三方勾稽</small></div></li>
+          <li><span>3</span><div><b>监测分析</b><small>规模、增长、结构和风险识别</small></div></li>
+          <li><span>4</span><div><b>通报反馈</b><small>形成月度态势和重点关注清单</small></div></li>
+        </ol>
+        <div class="quality-strip">
+          <span><b>6</b>项指标</span>
+          <span><b>100%</b>勾稽一致</span>
+          <span><b id="latestPeriodShort">06月</b>最新期</span>
+        </div>
+      </article>
+
+      <article class="dash-card span-7 ranking-card">
+        <header class="dash-card-head">
+          <div>
+            <span class="section-no">03</span>
+            <h3>地市规模排名</h3>
+            <p id="rankingSubtitle">营业收入，单位：亿元</p>
+          </div>
+          <label class="compact-select">排名指标
+            <select id="rankingMetric">
+              <option value="revenue">营业收入</option>
+              <option value="rd">研发费用</option>
+              <option value="employment">平均用工</option>
+              <option value="enterprises">企业数</option>
+            </select>
+          </label>
+        </header>
+        <div class="ranking-chart" id="rankingChart"></div>
+      </article>
+
+      <article class="dash-card span-5 sector-card">
+        <header class="dash-card-head">
+          <div>
+            <span class="section-no">04</span>
+            <h3>四领域营收结构</h3>
+            <p>营业收入占全省比重及同比增速</p>
+          </div>
+        </header>
+        <div id="sectorChart"></div>
+      </article>
+
+      <article class="dash-card span-12 heatmap-card">
+        <header class="dash-card-head">
+          <div>
+            <span class="section-no">05</span>
+            <h3>地市增长热力监测</h3>
+            <p>同比增速；蓝色表示增长，橙色表示下降，特殊状态按原表保留</p>
+          </div>
+        </header>
+        <div class="table-scroll"><table class="heatmap-table" id="heatmapTable"></table></div>
+      </article>
+
+      <article class="dash-card span-12 detail-table-card">
+        <header class="dash-card-head">
+          <div>
+            <span class="section-no">06</span>
+            <h3>地市监测明细</h3>
+            <p>金额单位：亿元；平均用工单位：万人</p>
+          </div>
+        </header>
+        <div class="table-scroll"><table class="detail-monitor-table" id="detailTable"></table></div>
+      </article>
+    </section>
+
+    <section class="methodology-card">
+      <div>
+        <h3>指标口径与数据来源</h3>
+        <p>金额指标为“1月至本月”累计值，原始单位为千元；增速均为较上年同期增速。页面展示时金额换算为亿元，用工换算为万人。</p>
+      </div>
+      <div class="source-files" id="sourceFiles"></div>
+    </section>
+
+    <noscript><p class="noscript-note">请启用 JavaScript 查看统计监测图表。</p></noscript>
+  </main>
+
+  <script src="../data/monitoring.js"></script>
+  <script src="../js/monitoring.js"></script>
+</body>
+</html>
